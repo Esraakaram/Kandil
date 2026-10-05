@@ -161,7 +161,7 @@ model AdminUser {
 
 model LandingPage {
   id                     Int     @id @default(1)
-  videoUrl               String? @default("https://www.youtube.com/embed/5oXlbsDoiPE") @db.Text
+  videoUrl               String? @default("https://www.youtube.com/embed/5oXlbsDoiPE")
   projectsCount          Int     @default(68)
   totalUnits             Int     @default(628)
   underConstructionCount Int     @default(90)
