@@ -5,401 +5,278 @@ import path from 'path';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('--- Starting Database Seeding ---');
+  console.log('--- Starting TiDB / MySQL Database Seeding ---');
 
-  let dataPath = path.resolve(process.cwd(), 'data/databaseData.json');
-  if (!fs.existsSync(dataPath)) {
-    dataPath = path.resolve(process.cwd(), 'src/data/databaseData.json');
-  }
-  if (!fs.existsSync(dataPath)) {
-    dataPath = path.resolve(process.cwd(), 'full_db_dump.json');
-  }
-  if (!fs.existsSync(dataPath)) {
-    throw new Error('databaseData.json file not found at: ' + dataPath);
+  const seedPath = path.resolve(process.cwd(), 'prisma/seed_data.json');
+  if (!fs.existsSync(seedPath)) {
+    throw new Error('seed_data.json file not found at: ' + seedPath);
   }
 
-  const raw = fs.readFileSync(dataPath, 'utf-8');
+  const raw = fs.readFileSync(seedPath, 'utf-8');
   const data = JSON.parse(raw);
 
-  // 1. Clean existing records to avoid duplicates
-  console.log('Clearing existing data...');
-  await prisma.adminUser.deleteMany();
-  await prisma.contact.deleteMany();
-  await prisma.commercialProject.deleteMany();
-  await prisma.finishCategory.deleteMany();
-  await prisma.media.deleteMany();
-  await prisma.mediaCategory.deleteMany();
-  await prisma.whyUs.deleteMany();
-  await prisma.socialLink.deleteMany();
-  await prisma.coverImage.deleteMany();
-  await prisma.slider.deleteMany();
-  await prisma.unit.deleteMany();
-  await prisma.project.deleteMany();
-  await prisma.area.deleteMany();
-  await prisma.city.deleteMany();
+  console.log('Clearing existing data if any...');
+  try {
+    await prisma.contact.deleteMany();
+    await prisma.commercialProject.deleteMany();
+    await prisma.finishCategory.deleteMany();
+    await prisma.media.deleteMany();
+    await prisma.mediaCategory.deleteMany();
+    await prisma.whyUs.deleteMany();
+    await prisma.socialLink.deleteMany();
+    await prisma.coverImage.deleteMany();
+    await prisma.slider.deleteMany();
+    await prisma.unit.deleteMany();
+    await prisma.project.deleteMany();
+    await prisma.area.deleteMany();
+    await prisma.city.deleteMany();
+    await prisma.adminUser.deleteMany();
+    await prisma.landingPage.deleteMany();
+  } catch (e) {
+    console.log('Note: Tables might be empty, continuing...');
+  }
 
-  // 2. Seed Admin Users
+  // 1. Admin Users
   console.log('Seeding Admin Users...');
   await prisma.adminUser.createMany({
     data: [
       { username: 'admin', password: 'admin', role: 'SuperAdmin' },
+      { username: 'AdminKandil@gmail.com', password: 'Kandil@2024%dev', role: 'SuperAdmin' },
       { username: 'kandil', password: 'kandil2024', role: 'SuperAdmin' }
     ]
   });
 
-  // 3. Seed Cities & Areas
-  console.log('Seeding Cities and Areas...');
-  if (data.cities && Array.isArray(data.cities)) {
-    for (const item of data.cities) {
-      if (!item.city) continue;
-      const city = await prisma.city.create({
-        data: {
-          id: item.city.id,
-          name: item.city.name,
-          imageName: item.city.imageName || null
-        }
-      });
-
-      if (item.areas && Array.isArray(item.areas)) {
-        for (const area of item.areas) {
-          await prisma.area.create({
-            data: {
-              id: area.id,
-              name: area.name,
-              imageName: area.imageName || null,
-              cityId: city.id
-            }
-          });
-        }
-      }
-    }
-  }
-
-  // 4. Seed Projects
-  console.log('Seeding Projects...');
-  const projectDetailsMap = data.projectDetails || {};
-  const processedProjectIds = new Set();
-
-  for (const [idStr, detail] of Object.entries(projectDetailsMap)) {
-    const id = Number(idStr);
-    processedProjectIds.add(id);
-
-    await prisma.project.create({
+  // 2. Cities
+  console.log(`Seeding ${data.cities.length} Cities...`);
+  for (const c of data.cities) {
+    await prisma.city.create({
       data: {
-        id,
-        name: detail.title || `مشروع ${id}`,
-        imageName: detail.mainImage || null,
-        areaId: detail.areaId || null,
-        areaName: detail.areaName || null,
-        status: detail.status || null,
-        deliveryDate: detail.deliveryDate || null,
-        aboutProject: detail.aboutProject || '',
-        videoURL: detail.videoURL || null,
-        mainImage: detail.mainImage || null,
-        locationImage: detail.locationImage || null,
-        pdfFile: detail.pdfFile || null,
-        isFinish: !!detail.isFinish,
-        detailsCoverImage: detail.detailsCoverImage || null,
-        locationProjects: detail.locationProjects ? JSON.stringify(detail.locationProjects) : null,
-        advantageProjects: detail.advantageProjects ? JSON.stringify(detail.advantageProjects) : null,
-        images: detail.images ? JSON.stringify(detail.images) : null
+        id: c.id,
+        name: c.name,
+        imageName: c.imageName
       }
     });
   }
 
-  // In case there are extra projects in projectsWithArea not in projectDetails:
-  if (data.projectsWithArea && Array.isArray(data.projectsWithArea)) {
-    for (const group of data.projectsWithArea) {
-      if (!group.viewProject) continue;
-      for (const p of group.viewProject) {
-        if (!processedProjectIds.has(p.id)) {
-          processedProjectIds.add(p.id);
-          await prisma.project.create({
-            data: {
-              id: p.id,
-              name: p.name,
-              imageName: p.imageName || null,
-              areaId: p.areaId || group.id || null,
-              areaName: p.areaName || group.areaName || null,
-              status: p.status || null,
-              deliveryDate: p.deliveryDate || null
-            }
-          });
-        }
+  // 3. Areas
+  console.log(`Seeding ${data.areas.length} Areas...`);
+  for (const a of data.areas) {
+    await prisma.area.create({
+      data: {
+        id: a.id,
+        name: a.name,
+        imageName: a.imageName,
+        cityId: a.cityId
       }
-    }
+    });
   }
 
-  // 5. Seed Units
-  console.log('Seeding Units...');
-  const unitDetailsMap = data.unitDetails || {};
-  const processedUnitIds = new Set();
-
-  if (data.units && Array.isArray(data.units)) {
-    for (const u of data.units) {
-      processedUnitIds.add(u.id);
-      const detail = unitDetailsMap[String(u.id)] || {};
-
-      // Verify projectId exists in DB
-      let validProjectId = u.projectId || detail.projectId || null;
-      if (validProjectId && !processedProjectIds.has(validProjectId)) {
-        validProjectId = null;
+  // 4. Projects
+  console.log(`Seeding ${data.projects.length} Projects...`);
+  for (const p of data.projects) {
+    await prisma.project.create({
+      data: {
+        id: p.id,
+        name: p.name,
+        imageName: p.imageName,
+        areaId: p.areaId,
+        areaName: p.areaName,
+        status: p.status,
+        deliveryDate: p.deliveryDate,
+        aboutProject: p.aboutProject,
+        videoURL: p.videoURL,
+        mainImage: p.mainImage,
+        locationImage: p.locationImage,
+        pdfFile: p.pdfFile,
+        isFinish: !!p.isFinish,
+        detailsCoverImage: p.detailsCoverImage,
+        locationProjects: p.locationProjects,
+        advantageProjects: p.advantageProjects,
+        images: p.images
       }
-
-      await prisma.unit.create({
-        data: {
-          id: u.id,
-          title: u.title || detail.title || `وحدة ${u.id}`,
-          description: detail.description || u.description || '',
-          imageName: u.imageName || detail.imageName || null,
-          status: u.status || detail.status || 'Available',
-          isShown: u.isShown !== undefined ? u.isShown : true,
-          codeUnit: u.codeUnit || detail.codeUnit || '',
-          area: Number(u.area || detail.area || 0),
-          numberBathroom: Number(u.numberBathroom || detail.numberBathroom || 0),
-          numberRoom: Number(u.numberRoom || detail.numberRoom || 0),
-          yearOfBuild: Number(u.yearOfBuild || detail.yearOfBuild || 2024),
-          price: Number(u.price || detail.price || 0),
-          videoUrl: detail.videoUrl || u.videoUrl || null,
-          latitude: detail.latitude || u.latitude || null,
-          longitude: detail.longitude || u.longitude || null,
-          nameLocation: u.nameLocation || detail.nameLocation || '',
-          typePrice: u.typePrice || detail.typePrice || 'كاش',
-          projectId: validProjectId,
-          detailsCoverImage: detail.detailsCoverImage || null,
-          advantageUnits: detail.advantageUnits ? JSON.stringify(detail.advantageUnits) : null,
-          serviceUnits: detail.serviceUnits ? JSON.stringify(detail.serviceUnits) : null,
-          unitImages: detail.unitImages ? JSON.stringify(detail.unitImages) : null
-        }
-      });
-    }
+    });
   }
 
-  // Check any extra in unitDetails
-  for (const [idStr, detail] of Object.entries(unitDetailsMap)) {
-    const id = Number(idStr);
-    if (!processedUnitIds.has(id)) {
-      processedUnitIds.add(id);
-      let validProjectId = detail.projectId || null;
-      if (validProjectId && !processedProjectIds.has(validProjectId)) {
-        validProjectId = null;
+  // 5. Units
+  console.log(`Seeding ${data.units.length} Units...`);
+  for (const u of data.units) {
+    await prisma.unit.create({
+      data: {
+        id: u.id,
+        title: u.title,
+        description: u.description,
+        imageName: u.imageName,
+        status: u.status,
+        isShown: u.isShown !== undefined ? u.isShown : true,
+        codeUnit: u.codeUnit,
+        area: u.area,
+        numberBathroom: u.numberBathroom,
+        numberRoom: u.numberRoom,
+        yearOfBuild: u.yearOfBuild,
+        price: u.price,
+        videoUrl: u.videoUrl,
+        latitude: u.latitude,
+        longitude: u.longitude,
+        nameLocation: u.nameLocation,
+        typePrice: u.typePrice,
+        projectId: u.projectId,
+        detailsCoverImage: u.detailsCoverImage,
+        advantageUnits: u.advantageUnits,
+        serviceUnits: u.serviceUnits,
+        unitImages: u.unitImages
       }
-
-      await prisma.unit.create({
-        data: {
-          id,
-          title: detail.title || `وحدة ${id}`,
-          description: detail.description || '',
-          imageName: detail.imageName || null,
-          status: detail.status || 'Available',
-          isShown: detail.isShown !== undefined ? detail.isShown : true,
-          codeUnit: detail.codeUnit || '',
-          area: Number(detail.area || 0),
-          numberBathroom: Number(detail.numberBathroom || 0),
-          numberRoom: Number(detail.numberRoom || 0),
-          yearOfBuild: Number(detail.yearOfBuild || 2024),
-          price: Number(detail.price || 0),
-          videoUrl: detail.videoUrl || null,
-          latitude: detail.latitude || null,
-          longitude: detail.longitude || null,
-          nameLocation: detail.nameLocation || '',
-          typePrice: detail.typePrice || 'كاش',
-          projectId: validProjectId,
-          detailsCoverImage: detail.detailsCoverImage || null,
-          advantageUnits: detail.advantageUnits ? JSON.stringify(detail.advantageUnits) : null,
-          serviceUnits: detail.serviceUnits ? JSON.stringify(detail.serviceUnits) : null,
-          unitImages: detail.unitImages ? JSON.stringify(detail.unitImages) : null
-        }
-      });
-    }
+    });
   }
 
-  // 6. Seed Sliders
-  console.log('Seeding Sliders...');
-  if (data.sliders && Array.isArray(data.sliders)) {
-    for (const s of data.sliders) {
-      await prisma.slider.create({
-        data: {
-          id: s.id,
-          mediaType: s.mediaType || 'image',
-          mediaPath: s.mediaPath || '',
-          title: s.title || null,
-          subtitle: s.subtitle || null,
-          link: s.link || null
-        }
-      });
-    }
+  // 6. Sliders
+  console.log(`Seeding ${data.sliders.length} Sliders...`);
+  for (const s of data.sliders) {
+    await prisma.slider.create({
+      data: {
+        id: s.id,
+        mediaType: s.mediaType,
+        mediaPath: s.mediaPath,
+        title: s.title,
+        subtitle: s.subtitle,
+        link: s.link
+      }
+    });
   }
 
-  // 7. Seed CoverImages
-  console.log('Seeding Cover Images...');
-  if (data.coverImages && Array.isArray(data.coverImages)) {
-    for (const c of data.coverImages) {
+  // 7. Cover Images
+  if (data.coverImages) {
+    console.log(`Seeding ${data.coverImages.length} Cover Images...`);
+    for (const ci of data.coverImages) {
       await prisma.coverImage.create({
         data: {
-          id: c.id,
-          imageName: c.imageName,
-          imageType: c.imageType || null,
-          pageName: c.pageName
+          id: ci.id,
+          imageName: ci.imageName,
+          imageType: ci.imageType,
+          pageName: ci.pageName
         }
       });
     }
   }
 
-  // 8. Seed Social Links
-  console.log('Seeding Social Links...');
-  if (data.socialLinks && Array.isArray(data.socialLinks)) {
-    for (const link of data.socialLinks) {
+  // 8. Social Links
+  if (data.socialLinks) {
+    console.log(`Seeding ${data.socialLinks.length} Social Links...`);
+    for (const sl of data.socialLinks) {
       await prisma.socialLink.create({
         data: {
-          id: link.id,
-          url: link.url,
-          type: link.type,
-          name: link.name || null
+          id: sl.id,
+          url: sl.url,
+          type: sl.type,
+          name: sl.name
         }
       });
     }
   }
 
-  // 9. Seed Why Us
-  console.log('Seeding Why Us...');
-  if (data.whyUs && Array.isArray(data.whyUs)) {
+  // 9. Why Us
+  if (data.whyUs) {
+    console.log(`Seeding ${data.whyUs.length} Why Us items...`);
     for (const w of data.whyUs) {
       await prisma.whyUs.create({
         data: {
           id: w.id,
           title: w.title,
           description: w.description,
-          quote: w.quote || null,
-          fullDescription: w.fullDescription || null,
-          imageUrl: w.imageUrl || null
+          quote: w.quote,
+          fullDescription: w.fullDescription,
+          imageUrl: w.imageUrl
         }
       });
     }
   }
 
-  // 10. Seed Media Categories & Media
-  console.log('Seeding Media Categories and Media...');
-  if (data.mediaCategories && Array.isArray(data.mediaCategories)) {
+  // 10. Media Categories & Media
+  if (data.mediaCategories) {
+    console.log(`Seeding ${data.mediaCategories.length} Media Categories...`);
     for (const mc of data.mediaCategories) {
       await prisma.mediaCategory.create({
         data: {
           id: mc.id,
           title: mc.title,
-          imageName: mc.imageName || null
+          imageName: mc.imageName
         }
       });
     }
   }
 
-  if (data.media && Array.isArray(data.media)) {
+  if (data.media) {
+    console.log(`Seeding ${data.media.length} Media articles...`);
     for (const m of data.media) {
       await prisma.media.create({
         data: {
           id: m.id,
           title: m.title,
           description: m.description,
-          created: m.created || new Date().toISOString(),
-          imageName: m.imageName || null,
-          videoURl: m.videoURl || null,
+          created: m.created,
+          imageName: m.imageName,
+          videoURl: m.videoURl,
           mediaId: m.mediaId
         }
       });
     }
   }
 
-  // 11. Seed Finish Categories
-  console.log('Seeding Finish Categories...');
-  if (data.finishCategories && Array.isArray(data.finishCategories)) {
+  // 11. Finish Categories
+  if (data.finishCategories) {
+    console.log(`Seeding ${data.finishCategories.length} Finish Categories...`);
     for (const fc of data.finishCategories) {
       await prisma.finishCategory.create({
         data: {
           id: fc.id,
           title: fc.title,
-          imageName: fc.imageName || null,
-          description: fc.description || null,
-          items: fc.items ? JSON.stringify(fc.items) : null
+          imageName: fc.imageName,
+          description: fc.description,
+          items: fc.items
         }
       });
     }
   }
 
-  // 12. Seed Commercial Projects
-  console.log('Seeding Commercial Projects...');
-  if (data.commercialProjects && Array.isArray(data.commercialProjects)) {
+  // 12. Commercial Projects
+  if (data.commercialProjects) {
+    console.log(`Seeding ${data.commercialProjects.length} Commercial Projects...`);
     for (const cp of data.commercialProjects) {
       await prisma.commercialProject.create({
         data: {
           id: cp.id,
           title: cp.title,
-          areaName: cp.areaName || '',
-          description: cp.description || '',
-          imageName: cp.imageName || null,
-          unitsCount: Number(cp.unitsCount || 0),
-          type: cp.type || 'تجاري',
-          priceStart: Number(cp.priceStart || 0)
+          areaName: cp.areaName,
+          description: cp.description,
+          imageName: cp.imageName,
+          unitsCount: cp.unitsCount,
+          type: cp.type,
+          priceStart: cp.priceStart
         }
       });
     }
   }
 
-  // 13. Seed Contacts
-  console.log('Seeding Contacts...');
-  const contactsList = (data.contacts && data.contacts.length > 0) ? data.contacts : [
-    {
+  // 13. Landing Page
+  console.log('Seeding Landing Page settings...');
+  await prisma.landingPage.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
       id: 1,
-      name: 'أحمد محمود سليمان',
-      phone: '01012345678',
-      email: 'ahmed.soliman@example.com',
-      project: 'مشروع G 198 | النرجس الجديدة',
-      message: 'أرغب في الاستفسار عن تفاصيل أنظمة السداد للوحدة 185م² وتاريخ الاستلام النهائي.',
-      status: 'جديد',
-      notes: 'طلب مكالمة هاتفية بعد الساعة 5 مساءً'
-    },
-    {
-      id: 2,
-      name: 'سارة خالد المنشاوي',
-      phone: '01123456789',
-      email: 'sara.khalid@example.com',
-      project: 'مشروع B 245 | النورث هاوس',
-      message: 'مهتمة بالدوبليكس بحديقة خاصة ومعرفة نسبة الخصم في حال الدفع الكاش.',
-      status: 'تم التواصل',
-      notes: 'تم إرسال البروشور وفيديو الموقع على واتساب'
-    },
-    {
-      id: 3,
-      name: 'م. تامر عبد العزيز',
-      phone: '01223456780',
-      email: 'eng.tamer@gmail.com',
-      project: 'مشروع D 14 | بيت الوطن الحي الرابع',
-      message: 'استفسار عن الشقق المتبقية بالدور الثاني ناصية صريحة.',
-      status: 'جديد',
-      notes: ''
+      videoUrl: 'https://www.youtube.com/embed/5oXlbsDoiPE',
+      projectsCount: 68,
+      totalUnits: 628,
+      underConstructionCount: 90,
+      deliveredUnitsCount: 528
     }
-  ];
+  });
 
-  for (const c of contactsList) {
-    await prisma.contact.create({
-      data: {
-        id: c.id,
-        name: c.name,
-        phone: c.phone,
-        email: c.email || null,
-        project: c.project || 'استفسار عام',
-        message: c.message || '',
-        createdAt: c.createdAt ? new Date(c.createdAt) : new Date(),
-        status: c.status || 'جديد',
-        notes: c.notes || null
-      }
-    });
-  }
-
-  console.log('✅ Database seeded successfully with all existing dashboard & site data!');
+  console.log('--- TiDB Seeding Finished Successfully! ---');
 }
 
 main()
   .catch((e) => {
-    console.error('Error during seeding:', e);
+    console.error('Seeding error:', e);
     process.exit(1);
   })
   .finally(async () => {

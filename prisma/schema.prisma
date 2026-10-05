@@ -3,21 +3,21 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model City {
   id        Int      @id @default(autoincrement())
   name      String
-  imageName String?
+  imageName String?  @db.Text
   areas     Area[]
 }
 
 model Area {
   id        Int       @id @default(autoincrement())
   name      String
-  imageName String?
+  imageName String?   @db.Text
   cityId    Int
   city      City      @relation(fields: [cityId], references: [id], onDelete: Cascade)
   projects  Project[]
@@ -26,30 +26,30 @@ model Area {
 model Project {
   id                 Int      @id @default(autoincrement())
   name               String
-  imageName          String?
+  imageName          String?  @db.Text
   areaId             Int?
   area               Area?    @relation(fields: [areaId], references: [id], onDelete: SetNull)
   areaName           String?
   status             String?
   deliveryDate       String?
-  aboutProject       String?
-  videoURL           String?
-  mainImage          String?
-  locationImage      String?
-  pdfFile            String?
+  aboutProject       String?  @db.Text
+  videoURL           String?  @db.Text
+  mainImage          String?  @db.Text
+  locationImage      String?  @db.Text
+  pdfFile            String?  @db.Text
   isFinish           Boolean  @default(false)
-  detailsCoverImage  String?
-  locationProjects   String?
-  advantageProjects  String?
-  images             String?
+  detailsCoverImage  String?  @db.Text
+  locationProjects   String?  @db.Text
+  advantageProjects  String?  @db.Text
+  images             String?  @db.Text
   units              Unit[]
 }
 
 model Unit {
   id                 Int      @id @default(autoincrement())
   title              String
-  description        String?
-  imageName          String?
+  description        String?  @db.Text
+  imageName          String?  @db.Text
   status             String   @default("Available")
   isShown            Boolean  @default(true)
   codeUnit           String?
@@ -58,38 +58,38 @@ model Unit {
   numberRoom         Int      @default(0)
   yearOfBuild        Int      @default(2024)
   price              Float    @default(0)
-  videoUrl           String?
+  videoUrl           String?  @db.Text
   latitude           Float?
   longitude          Float?
   nameLocation       String?
   typePrice          String   @default("كاش")
   projectId          Int?
   project            Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  detailsCoverImage  String?
-  advantageUnits     String?
-  serviceUnits       String?
-  unitImages         String?
+  detailsCoverImage  String?  @db.Text
+  advantageUnits     String?  @db.Text
+  serviceUnits       String?  @db.Text
+  unitImages         String?  @db.Text
 }
 
 model Slider {
   id        Int     @id @default(autoincrement())
   mediaType String  @default("image")
-  mediaPath String
+  mediaPath String  @db.Text
   title     String?
   subtitle  String?
-  link      String?
+  link      String? @db.Text
 }
 
 model CoverImage {
   id        Int     @id @default(autoincrement())
-  imageName String
+  imageName String  @db.Text
   imageType String?
   pageName  String
 }
 
 model SocialLink {
   id   Int     @id @default(autoincrement())
-  url  String
+  url  String  @db.Text
   type Int
   name String?
 }
@@ -97,26 +97,26 @@ model SocialLink {
 model WhyUs {
   id              Int     @id @default(autoincrement())
   title           String
-  description     String
-  quote           String?
-  fullDescription String?
-  imageUrl        String?
+  description     String  @db.Text
+  quote           String? @db.Text
+  fullDescription String? @db.Text
+  imageUrl        String? @db.Text
 }
 
 model MediaCategory {
   id        Int     @id @default(autoincrement())
   title     String
-  imageName String?
+  imageName String? @db.Text
   media     Media[]
 }
 
 model Media {
   id          Int           @id @default(autoincrement())
   title       String
-  description String
+  description String        @db.Text
   created     String?
-  imageName   String?
-  videoURl    String?
+  imageName   String?       @db.Text
+  videoURl    String?       @db.Text
   mediaId     Int
   category    MediaCategory @relation(fields: [mediaId], references: [id], onDelete: Cascade)
 }
@@ -124,17 +124,17 @@ model Media {
 model FinishCategory {
   id          Int     @id @default(autoincrement())
   title       String
-  imageName   String?
-  description String?
-  items       String?
+  imageName   String? @db.Text
+  description String? @db.Text
+  items       String? @db.Text
 }
 
 model CommercialProject {
   id          Int     @id @default(autoincrement())
   title       String
   areaName    String
-  description String
-  imageName   String?
+  description String  @db.Text
+  imageName   String? @db.Text
   unitsCount  Int     @default(0)
   type        String  @default("تجاري")
   priceStart  Float   @default(0)
@@ -146,10 +146,10 @@ model Contact {
   phone     String
   email     String?
   project   String?
-  message   String?
+  message   String?  @db.Text
   createdAt DateTime @default(now())
   status    String   @default("جديد")
-  notes     String?
+  notes     String?  @db.Text
 }
 
 model AdminUser {
@@ -161,10 +161,9 @@ model AdminUser {
 
 model LandingPage {
   id                     Int     @id @default(1)
-  videoUrl               String? @default("https://www.youtube.com/embed/5oXlbsDoiPE")
+  videoUrl               String? @default("https://www.youtube.com/embed/5oXlbsDoiPE") @db.Text
   projectsCount          Int     @default(68)
   totalUnits             Int     @default(628)
   underConstructionCount Int     @default(90)
   deliveredUnitsCount    Int     @default(528)
 }
-
