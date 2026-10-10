@@ -27,6 +27,10 @@ export async function GET(req, { params }) {
       const data = await dbService.getAllFlatProjects();
       return NextResponse.json(data);
     }
+    if (fullPath === 'projects/portfolio' || fullPath === 'units/paid') {
+      const data = await dbService.getPortfolioProjects();
+      return NextResponse.json(data);
+    }
     if (pathParts.length === 2 && pathParts[0].toLowerCase() === 'projects') {
       const project = await dbService.getProjectById(pathParts[1]);
       if (!project) return NextResponse.json({ message: 'Project not found' }, { status: 404 });

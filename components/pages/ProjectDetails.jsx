@@ -62,10 +62,18 @@ export const ProjectDetails = () => {
 
   const [project, setProject] = useState(null);
   const [projectUnits, setProjectUnits] = useState([]);
-  const [activeTab, setActiveTab] = useState('about'); // 'about' | 'location' | 'advantages' | 'video' | 'units' | 'pdf'
+  const [activeTab, setActiveTab] = useState('section-about');
   const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
   const [showPdfViewer, setShowPdfViewer] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const scrollToSection = (id) => {
+    setActiveTab(id);
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   // Inquiry form
   const [name, setName] = useState('');
@@ -182,10 +190,12 @@ export const ProjectDetails = () => {
               <span>{project.areaName || 'القاهرة الجديدة'}</span>
             </span>
 
-            <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur px-3 py-1.5 rounded-full font-bold">
-              <Calendar className="w-4 h-4 text-[#f59e0b]" />
-              <span>{project.deliveryDate ? `استلام: ${project.deliveryDate}` : 'تسليم فندقي فاخر'}</span>
-            </span>
+            {project.deliveryDate && project.deliveryDate !== 'تسليم فندقي فاخر' && (
+              <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur px-3 py-1.5 rounded-full font-bold">
+                <Calendar className="w-4 h-4 text-[#f59e0b]" />
+                <span>{`استلام: ${project.deliveryDate}`}</span>
+              </span>
+            )}
 
             {project.status && (
               <span className="inline-flex items-center gap-1.5 bg-emerald-600/80 backdrop-blur px-3 py-1.5 rounded-full font-bold">
@@ -196,74 +206,76 @@ export const ProjectDetails = () => {
         </div>
       </div>
 
-      {/* 2. Horizontal Navigation Tabs (PDF Page 4, 5, 9) */}
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-gray-200 no-scrollbar">
-          <button
-            onClick={() => setActiveTab('about')}
-            className={`px-6 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap ${
-              activeTab === 'about'
-                ? 'bg-[#d61c23] text-white shadow-md'
-                : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
-            }`}
-          >
-            عن المشروع
-          </button>
+      {/* 2. Quick Navigation Bar */}
+      <div className="sticky top-16 md:top-20 z-40 bg-white/95 backdrop-blur-md border-y border-gray-200 py-3 shadow-xs">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <button
+              onClick={() => scrollToSection('section-about')}
+              className={`px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap ${
+                activeTab === 'section-about'
+                  ? 'bg-[#d61c23] text-white shadow-md'
+                  : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200'
+              }`}
+            >
+              عن المشروع
+            </button>
 
-          <button
-            onClick={() => setActiveTab('location')}
-            className={`px-6 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap ${
-              activeTab === 'location'
-                ? 'bg-[#d61c23] text-white shadow-md'
-                : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
-            }`}
-          >
-            موقع المشروع
-          </button>
+            <button
+              onClick={() => scrollToSection('section-location')}
+              className={`px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap ${
+                activeTab === 'section-location'
+                  ? 'bg-[#d61c23] text-white shadow-md'
+                  : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200'
+              }`}
+            >
+              موقع المشروع
+            </button>
 
-          <button
-            onClick={() => setActiveTab('advantages')}
-            className={`px-6 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap ${
-              activeTab === 'advantages'
-                ? 'bg-[#d61c23] text-white shadow-md'
-                : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
-            }`}
-          >
-            مميزات المشروع
-          </button>
+            <button
+              onClick={() => scrollToSection('section-advantages')}
+              className={`px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap ${
+                activeTab === 'section-advantages'
+                  ? 'bg-[#d61c23] text-white shadow-md'
+                  : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200'
+              }`}
+            >
+              مميزات المشروع
+            </button>
 
-          <button
-            onClick={() => setActiveTab('video')}
-            className={`px-6 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap ${
-              activeTab === 'video'
-                ? 'bg-[#d61c23] text-white shadow-md'
-                : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
-            }`}
-          >
-            فيديو تعريفي
-          </button>
+            <button
+              onClick={() => scrollToSection('section-video')}
+              className={`px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap ${
+                activeTab === 'section-video'
+                  ? 'bg-[#d61c23] text-white shadow-md'
+                  : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200'
+              }`}
+            >
+              فيديو تعريفي
+            </button>
 
-          <button
-            onClick={() => setActiveTab('units')}
-            className={`px-6 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap ${
-              activeTab === 'units'
-                ? 'bg-[#d61c23] text-white shadow-md'
-                : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
-            }`}
-          >
-            الوحدات المتاحة ({projectUnits.length})
-          </button>
+            <button
+              onClick={() => scrollToSection('section-units')}
+              className={`px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap ${
+                activeTab === 'section-units'
+                  ? 'bg-[#d61c23] text-white shadow-md'
+                  : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200'
+              }`}
+            >
+              الوحدات المتاحة ({projectUnits.length})
+            </button>
 
-          <button
-            onClick={() => setActiveTab('pdf')}
-            className={`px-6 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap ${
-              activeTab === 'pdf'
-                ? 'bg-[#d61c23] text-white shadow-md'
-                : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
-            }`}
-          >
-            تفاصيل المشروع (البروشور)
-          </button>
+            <button
+              onClick={() => scrollToSection('section-pdf')}
+              className={`px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap ${
+                activeTab === 'section-pdf'
+                  ? 'bg-[#d61c23] text-white shadow-md'
+                  : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200'
+              }`}
+            >
+              تفاصيل المشروع (البروشور)
+            </button>
+          </div>
         </div>
       </div>
 
@@ -273,10 +285,9 @@ export const ProjectDetails = () => {
           {/* Main Column */}
           <div className="lg:col-span-2 space-y-8">
             {/* ============================================================== */}
-            {/* TAB 1: عن المشروع (PDF Page 9: نبذة + صور الواجهة والمداخل) */}
+            {/* SECTION 1: عن المشروع (PDF Page 9: نبذة + صور الواجهة والمداخل) */}
             {/* ============================================================== */}
-            {activeTab === 'about' && (
-              <div className="space-y-8">
+            <div id="section-about" className="space-y-8 scroll-mt-36">
                 {/* About Content */}
                 <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-4">
                   <h2 className="text-xl font-black text-gray-900 border-b border-gray-100 pb-3 flex items-center gap-2">
@@ -333,13 +344,11 @@ export const ProjectDetails = () => {
                   )}
                 </div>
               </div>
-            )}
 
             {/* ============================================================== */}
-            {/* TAB 2: موقع المشروع (PDF Page 4: 3-5 معالم متناسقة مع الخريطة FIT) */}
+            {/* SECTION 2: موقع المشروع وخريطة الوصول */}
             {/* ============================================================== */}
-            {activeTab === 'location' && (
-              <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+            <div id="section-location" className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-6 scroll-mt-36">
                 <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
                   <h3 className="text-xl font-black text-gray-900 flex items-center gap-2">
                     <MapPin className="w-5 h-5 text-[#d61c23]" />
@@ -435,13 +444,11 @@ export const ProjectDetails = () => {
                   </div>
                 </div>
               </div>
-            )}
 
             {/* ============================================================== */}
-            {/* TAB 3: مميزات المشروع */}
+            {/* SECTION 3: مميزات المشروع */}
             {/* ============================================================== */}
-            {activeTab === 'advantages' && (
-              <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+            <div id="section-advantages" className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-6 scroll-mt-36">
                 <h3 className="text-xl font-black text-gray-900 border-b border-gray-100 pb-3 flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 text-[#d61c23]" />
                   <span>مميزات وخدمات المشروع الفندقية</span>
@@ -470,13 +477,11 @@ export const ProjectDetails = () => {
                   </div>
                 )}
               </div>
-            )}
 
             {/* ============================================================== */}
-            {/* TAB 4: فيديو تعريفي */}
+            {/* SECTION 4: فيديو تعريفي */}
             {/* ============================================================== */}
-            {activeTab === 'video' && (
-              <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+            <div id="section-video" className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-6 scroll-mt-36">
                 <h3 className="text-xl font-black text-gray-900 border-b border-gray-100 pb-3 flex items-center gap-2">
                   <Video className="w-5 h-5 text-[#d61c23]" />
                   <span>جولة مصورة بالفيديو للمشروع</span>
@@ -501,13 +506,11 @@ export const ProjectDetails = () => {
                   </div>
                 )}
               </div>
-            )}
 
             {/* ============================================================== */}
-            {/* TAB 5: الوحدات المتاحة */}
+            {/* SECTION 5: الوحدات المتاحة بهذا المشروع */}
             {/* ============================================================== */}
-            {activeTab === 'units' && (
-              <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+            <div id="section-units" className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-6 scroll-mt-36">
                 <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                   <h3 className="text-xl font-black text-gray-900 flex items-center gap-2">
                     <Building2 className="w-5 h-5 text-[#d61c23]" />
@@ -570,13 +573,11 @@ export const ProjectDetails = () => {
                   </div>
                 )}
               </div>
-            )}
 
             {/* ============================================================== */}
-            {/* TAB 6: تفاصيل المشروع / بروشور PDF (PDF Page 5: بدون تحميل تلقائي) */}
+            {/* SECTION 6: تفاصيل المشروع / بروشور PDF */}
             {/* ============================================================== */}
-            {activeTab === 'pdf' && (
-              <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+            <div id="section-pdf" className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-6 scroll-mt-36">
                 <h3 className="text-xl font-black text-gray-900 border-b border-gray-100 pb-3 flex items-center gap-2">
                   <FileText className="w-5 h-5 text-[#d61c23]" />
                   <span>بروشور ومخططات المشروع الرسمية (PDF)</span>
@@ -655,8 +656,7 @@ export const ProjectDetails = () => {
                   </div>
                 )}
               </div>
-            )}
-          </div>
+            </div>
 
           {/* Sidebar (1 Col): Direct Inquiry & Contact */}
           <div className="space-y-6">

@@ -31,6 +31,12 @@ export const api = {
     return res.json();
   },
 
+  async getPortfolioProjects() {
+    const res = await fetch(`${API_BASE}/projects/portfolio`);
+    if (!res.ok) return [];
+    return res.json();
+  },
+
   async getAllUnits() {
     const res = await fetch(`${API_BASE}/Units/GetAllUnits`);
     return res.json();

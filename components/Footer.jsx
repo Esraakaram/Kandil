@@ -157,6 +157,11 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/portfolio" className="hover:text-white hover:translate-x-[-4px] inline-block transition-transform">
+                  سابقة الأعمال (المشروعات بوحداتها)
+                </Link>
+              </li>
+              <li>
                 <Link to="/comprojects" className="hover:text-white hover:translate-x-[-4px] inline-block transition-transform">
                   المشروعات التجارية
                 </Link>

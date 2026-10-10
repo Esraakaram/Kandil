@@ -157,6 +157,16 @@ export const Header = () => {
                     <span>المشروعات التجارية والخدمية</span>
                   </Link>
 
+                  <Link
+                    to="/portfolio"
+                    className="block px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-[#d61c23]/5 hover:text-[#d61c23] transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>سابقة الأعمال والتسليمات</span>
+                      <span className="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold">منجز</span>
+                    </div>
+                  </Link>
+
                   <div className="border-t border-gray-100 my-1"></div>
 
                   <Link
@@ -180,6 +190,15 @@ export const Header = () => {
                 </div>
               )}
             </div>
+
+            <Link
+              to="/portfolio"
+              className={`font-semibold text-sm transition-colors py-1 ${
+                isActive('/portfolio') || isActive('/unit/paid') ? 'text-[#d61c23] border-b-2 border-[#d61c23]' : 'text-gray-700 hover:text-[#d61c23]'
+              }`}
+            >
+              سابقة الأعمال
+            </Link>
 
             <Link
               to="/finishcategory"
@@ -314,6 +333,13 @@ export const Header = () => {
                     </div>
                   )}
                 </div>
+
+                <Link
+                  to="/portfolio"
+                  className="block px-3 py-2.5 rounded-lg text-base font-bold text-gray-800 hover:bg-gray-50 hover:text-[#d61c23]"
+                >
+                  سابقة الأعمال
+                </Link>
 
                 <Link
                   to="/finishcategory"

@@ -14,6 +14,14 @@ const nextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/dashboard/login',
+        destination: '/dashboard/Login',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

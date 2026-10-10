@@ -327,6 +327,7 @@ export const Dashboard = () => {
   const [unitStatusFilter, setUnitStatusFilter] = useState('ALL');
   const [unitProjectFilter, setUnitProjectFilter] = useState('ALL');
   const [projectSearch, setProjectSearch] = useState('');
+  const [projectPortfolioFilter, setProjectPortfolioFilter] = useState('ALL');
   const [contactSearch, setContactSearch] = useState('');
   const [contactStatusFilter, setContactStatusFilter] = useState('ALL');
   const [areaCityFilter, setAreaCityFilter] = useState('ALL');
@@ -337,14 +338,16 @@ export const Dashboard = () => {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   // Auth check & load data
   useEffect(() => {
-    let token = localStorage.getItem('kandil_admin_token');
+    const token = typeof window !== 'undefined' ? localStorage.getItem('kandil_admin_token') : null;
     if (!token) {
-      token = 'kandil-jwt-token-' + Date.now();
-      localStorage.setItem('kandil_admin_token', token);
-      localStorage.setItem('kandil_admin_user', JSON.stringify({ id: 1, username: 'admin', role: 'SuperAdmin' }));
+      navigate('/dashboard/login');
+      return;
     }
+    setIsAuthenticated(true);
     loadAllData();
   }, []);
 
@@ -444,6 +447,11 @@ export const Dashboard = () => {
       imageName: '', // cleared so user can upload the new floorplan layout
       videoUrl: u.videoUrl || '',
       description: u.description || '',
+      latitude: u.latitude || null,
+      longitude: u.longitude || null,
+      detailsCoverImage: u.detailsCoverImage || '',
+      advantageUnits: u.advantageUnits || '',
+      serviceUnits: u.serviceUnits || '',
       isShown: true
     });
     showToast('تم نسخ بيانات الوحدة! يمكنك الآن تعديل التقسيمة والدور ثم الضغط على حفظ الوحدة.');
@@ -453,11 +461,23 @@ export const Dashboard = () => {
     e.preventDefault();
     if (!editingUnit) return;
     try {
+      const payload = {
+        ...editingUnit,
+        latitude: editingUnit.latitude ? Number(editingUnit.latitude) : null,
+        longitude: editingUnit.longitude ? Number(editingUnit.longitude) : null,
+        advantageUnits: typeof editingUnit.advantageUnits === 'string'
+          ? editingUnit.advantageUnits.split(/[\n,،]+/).map((s) => s.trim()).filter(Boolean)
+          : editingUnit.advantageUnits,
+        serviceUnits: typeof editingUnit.serviceUnits === 'string'
+          ? editingUnit.serviceUnits.split(/[\n,،]+/).map((s) => s.trim()).filter(Boolean)
+          : editingUnit.serviceUnits
+      };
+
       if (editingUnit.id) {
         const res = await fetch(`/api/admin/units/${editingUnit.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(editingUnit)
+          body: JSON.stringify(payload)
         });
         const updated = await res.json();
         setUnits((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
@@ -466,7 +486,7 @@ export const Dashboard = () => {
         const res = await fetch('/api/admin/units', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(editingUnit)
+          body: JSON.stringify(payload)
         });
         const created = await res.json();
         setUnits((prev) => [created, ...prev]);
@@ -562,6 +582,24 @@ export const Dashboard = () => {
     } catch (err) {
       console.error(err);
       showToast('تعذر حذف المشروع');
+    }
+  };
+
+  const handleToggleProjectPortfolio = async (project) => {
+    const nextFinish = !project.isFinish;
+    try {
+      await fetch(`/api/admin/projects/${project.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isFinish: nextFinish })
+      });
+      setProjects((prev) =>
+        prev.map((p) => (p.id === project.id ? { ...p, isFinish: nextFinish } : p))
+      );
+      showToast(nextFinish ? 'تمت إضافة المشروع إلى سابقة الأعمال' : 'تمت إزالة المشروع من سابقة الأعمال');
+    } catch (err) {
+      console.error(err);
+      showToast('حدث خطأ أثناء تعديل حالة المشروع');
     }
   };
 
@@ -1047,10 +1085,18 @@ export const Dashboard = () => {
   });
 
   const filteredProjects = projects.filter((p) => {
-    return (
+    const matchesSearch =
       p.name?.toLowerCase().includes(projectSearch.toLowerCase()) ||
-      p.areaName?.toLowerCase().includes(projectSearch.toLowerCase())
-    );
+      p.areaName?.toLowerCase().includes(projectSearch.toLowerCase());
+
+    let matchesPortfolio = true;
+    if (projectPortfolioFilter === 'PORTFOLIO') {
+      matchesPortfolio = p.isFinish || p.status === 'تم البيع' || p.status === 'تم التسليم';
+    } else if (projectPortfolioFilter === 'CURRENT') {
+      matchesPortfolio = !p.isFinish && p.status !== 'تم البيع';
+    }
+
+    return matchesSearch && matchesPortfolio;
   });
 
   const filteredAreas = areas.filter((a) => {
@@ -1096,6 +1142,15 @@ export const Dashboard = () => {
   const totalSoldUnits = units.filter((u) => u.status === 'Sold').length;
   const totalAvailableUnits = units.filter((u) => u.status === 'Available').length;
   const newContactsCount = contacts.filter((c) => c.status === 'جديد').length;
+
+  if (!isAuthenticated) {
+    return (
+      <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-50 text-right" dir="rtl">
+        <div className="w-12 h-12 border-4 border-[#d61c23] border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-gray-700 text-sm font-bold">جاري التحقق من صلاحيات الدخول وتوجيهك...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col md:flex-row text-right bg-slate-50" dir="rtl">
@@ -2265,14 +2320,17 @@ export const Dashboard = () => {
                         <label className="block text-xs font-bold text-gray-700 mb-1">حالة المشروع</label>
                         <select
                           value={editingProject.status || 'تحت الإنشاء'}
-                          onChange={(e) =>
-                            setEditingProject({ ...editingProject, status: e.target.value })
-                          }
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const willFinish = val === 'تم البيع' || val === 'تم التسليم' ? true : editingProject.isFinish;
+                            setEditingProject({ ...editingProject, status: val, isFinish: willFinish });
+                          }}
                           className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-bold text-gray-800 focus:outline-none focus:border-[#d61c23]"
                         >
                           <option value="تحت الإنشاء">تحت الإنشاء</option>
-                          <option value="متاح">متاح</option>
-                          <option value="تم التسليم">تم التسليم</option>
+                          <option value="متاح">متاح للبيع</option>
+                          <option value="تم البيع">تم البيع (Sold Out)</option>
+                          <option value="تم التسليم">تم التسليم والانتهاء</option>
                         </select>
                       </div>
 
@@ -2340,19 +2398,31 @@ export const Dashboard = () => {
                         ></textarea>
                       </div>
 
-                      <div className="sm:col-span-2 flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-200">
-                        <input
-                          type="checkbox"
-                          id="isFinishProj"
-                          checked={!!editingProject.isFinish}
-                          onChange={(e) =>
-                            setEditingProject({ ...editingProject, isFinish: e.target.checked })
-                          }
-                          className="w-4 h-4 text-[#d61c23] rounded"
-                        />
-                        <label htmlFor="isFinishProj" className="text-xs font-bold text-gray-800 cursor-pointer">
-                          عرض المشروع في سابقة الأعمال (Completed Projects / isFinish)
-                        </label>
+                      <div className="sm:col-span-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-red-50/60 p-4 rounded-xl border border-red-100">
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            id="isFinishProj"
+                            checked={!!editingProject.isFinish}
+                            onChange={(e) =>
+                              setEditingProject({ ...editingProject, isFinish: e.target.checked })
+                            }
+                            className="w-5 h-5 text-[#d61c23] rounded focus:ring-[#d61c23]"
+                          />
+                          <div>
+                            <label htmlFor="isFinishProj" className="text-xs font-black text-gray-900 cursor-pointer block">
+                              عرض المشروع في سابقة الأعمال (Portfolio)
+                            </label>
+                            <span className="text-[11px] text-gray-500 block">
+                              يمكنك تفعيل هذا الخيار لعرض المشروع ووحداته في صفحة سابقة الأعمال، مع إمكانية استمراره في المشروعات الحالية أيضاً.
+                            </span>
+                          </div>
+                        </div>
+                        {editingProject.isFinish && (
+                          <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full shrink-0">
+                            مفعل في سابقة الأعمال ✓
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -2377,18 +2447,65 @@ export const Dashboard = () => {
                 /* LIST VIEW: PROJECTS */
                 <>
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="relative w-full sm:w-80">
-                      <input
-                        type="text"
-                        placeholder="ابحث باسم المشروع أو المنطقة..."
-                        value={projectSearch}
-                        onChange={(e) => {
-                          setProjectSearch(e.target.value);
-                          setProjectPage(1);
-                        }}
-                        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 pl-10 text-xs text-gray-800 focus:outline-none focus:border-[#d61c23]"
-                      />
-                      <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+                    <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                      <div className="relative w-full sm:w-72">
+                        <input
+                          type="text"
+                          placeholder="ابحث باسم المشروع أو المنطقة..."
+                          value={projectSearch}
+                          onChange={(e) => {
+                            setProjectSearch(e.target.value);
+                            setProjectPage(1);
+                          }}
+                          className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 pl-10 text-xs text-gray-800 focus:outline-none focus:border-[#d61c23]"
+                        />
+                        <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+                      </div>
+
+                      <div className="flex items-center gap-1.5 bg-gray-100 p-1 rounded-xl">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setProjectPortfolioFilter('ALL');
+                            setProjectPage(1);
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                            projectPortfolioFilter === 'ALL'
+                              ? 'bg-white text-gray-900 shadow-sm'
+                              : 'text-gray-600 hover:text-gray-900'
+                          }`}
+                        >
+                          الكل ({projects.length})
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setProjectPortfolioFilter('CURRENT');
+                            setProjectPage(1);
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                            projectPortfolioFilter === 'CURRENT'
+                              ? 'bg-white text-[#d61c23] shadow-sm'
+                              : 'text-gray-600 hover:text-gray-900'
+                          }`}
+                        >
+                          المشاريع الحالية
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setProjectPortfolioFilter('PORTFOLIO');
+                            setProjectPage(1);
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                            projectPortfolioFilter === 'PORTFOLIO'
+                              ? 'bg-emerald-600 text-white shadow-sm'
+                              : 'text-gray-600 hover:text-gray-900'
+                          }`}
+                        >
+                          سابقة الأعمال
+                        </button>
+                      </div>
                     </div>
 
                     <button
@@ -2463,6 +2580,22 @@ export const Dashboard = () => {
                                   className="font-bold text-[#d61c23] hover:underline"
                                 >
                                   {projectUnits.length} وحدة (عرض الوحدات)
+                                </button>
+                              </div>
+
+                              <div className="flex items-center justify-between pt-1">
+                                <span className="text-[11px] text-gray-500 font-semibold">سابقة الأعمال:</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleProjectPortfolio(p)}
+                                  className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition ${
+                                    p.isFinish
+                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200'
+                                      : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200'
+                                  }`}
+                                  title="التبديل بين إضافة أو إزالة المشروع من سابقة الأعمال"
+                                >
+                                  {p.isFinish ? '✓ في سابقة الأعمال' : '+ إضافة لسابقة الأعمال'}
                                 </button>
                               </div>
 
@@ -2693,10 +2826,92 @@ export const Dashboard = () => {
 
                       <div className="sm:col-span-2">
                         <ImageUploader
-                          label="الصورة الرئيسية للوحدة (رفع ملف)"
+                          label="الصورة الرئيسية للوحدة (المسقط أو الصورة الأساسية)"
                           value={editingUnit.imageName || ''}
                           onChange={(url) => setEditingUnit({ ...editingUnit, imageName: url })}
                         />
+                      </div>
+
+                      <div className="sm:col-span-2">
+                        <ImageUploader
+                          label="صورة الغلاف الإضافية / كفر التفاصيل (Details Cover Image)"
+                          value={editingUnit.detailsCoverImage || ''}
+                          onChange={(url) => setEditingUnit({ ...editingUnit, detailsCoverImage: url })}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">خط العرض (Latitude - خريطة Google)</label>
+                        <input
+                          type="number"
+                          step="any"
+                          value={editingUnit.latitude ?? ''}
+                          onChange={(e) =>
+                            setEditingUnit({
+                              ...editingUnit,
+                              latitude: e.target.value === '' ? null : Number(e.target.value)
+                            })
+                          }
+                          placeholder="مثال: 30.057356"
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-gray-800 focus:outline-none focus:border-[#d61c23]"
+                          dir="ltr"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">خط الطول (Longitude - خريطة Google)</label>
+                        <input
+                          type="number"
+                          step="any"
+                          value={editingUnit.longitude ?? ''}
+                          onChange={(e) =>
+                            setEditingUnit({
+                              ...editingUnit,
+                              longitude: e.target.value === '' ? null : Number(e.target.value)
+                            })
+                          }
+                          placeholder="مثال: 31.346144"
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-gray-800 focus:outline-none focus:border-[#d61c23]"
+                          dir="ltr"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-2">
+                        <label className="block text-xs font-bold text-gray-700 mb-1">
+                          مميزات الوحدة (اكتب كل ميزة في سطر منفصل)
+                        </label>
+                        <textarea
+                          rows="3"
+                          value={
+                            Array.isArray(editingUnit.advantageUnits)
+                              ? editingUnit.advantageUnits
+                                  .map((a) => (typeof a === 'object' && a?.text ? a.text : String(a)))
+                                  .join('\n')
+                              : editingUnit.advantageUnits || ''
+                          }
+                          onChange={(e) => setEditingUnit({ ...editingUnit, advantageUnits: e.target.value })}
+                          placeholder={'مثال:\nبحري فيو شارع اتجاهين 25م\nدخلة صريحة من محور محمد نجيب\nقريبة من الخدمات'}
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-gray-800 focus:outline-none focus:border-[#d61c23]"
+                        ></textarea>
+                      </div>
+
+                      <div className="sm:col-span-2">
+                        <label className="block text-xs font-bold text-gray-700 mb-1">
+                          خدمات الوحدة (اكتب كل خدمة في سطر منفصل)
+                        </label>
+                        <textarea
+                          rows="2"
+                          value={
+                            Array.isArray(editingUnit.serviceUnits)
+                              ? editingUnit.serviceUnits
+                                  .map((s) => (typeof s === 'object' && s?.text ? s.text : String(s)))
+                                  .join('\n')
+                              : editingUnit.serviceUnits || ''
+                          }
+                          onChange={(e) => setEditingUnit({ ...editingUnit, serviceUnits: e.target.value })}
+                          placeholder={'مثال:\nأمن وحراسة 24 ساعة\nجراج خاص تحت الأرض\nانتركم مرئي'}
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-gray-800 focus:outline-none focus:border-[#d61c23]"
+                        ></textarea>
                       </div>
 
                       <div className="sm:col-span-2">
@@ -2832,6 +3047,11 @@ export const Dashboard = () => {
                           nameLocation: 'القاهرة الجديدة',
                           imageName: '',
                           description: '',
+                          latitude: null,
+                          longitude: null,
+                          detailsCoverImage: '',
+                          advantageUnits: '',
+                          serviceUnits: '',
                           isShown: true
                         })
                       }
