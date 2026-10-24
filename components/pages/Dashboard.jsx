@@ -41,7 +41,8 @@ import {
   UploadCloud,
   ImagePlus,
   Loader2,
-  Globe
+  Globe,
+  Menu
 } from 'lucide-react';
 import { api, getImageUrl } from '@/services/api';
 
@@ -257,6 +258,7 @@ const ImageUploader = ({ label, value, onChange, placeholder = 'اختر صور�
 export const Dashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // State
   const [loading, setLoading] = useState(true);
@@ -1152,8 +1154,320 @@ export const Dashboard = () => {
     );
   }
 
+  const renderNavLinks = () => (
+    <>
+      <div className="px-3 py-1 text-[10px] font-black uppercase text-slate-500 tracking-wider">
+        الرئيسية والإحصائيات
+      </div>
+
+      <button
+        onClick={() => {
+          setActiveTab('overview');
+          setEditingUnit(null);
+          setEditingProject(null);
+          setMobileMenuOpen(false);
+        }}
+        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
+          activeTab === 'overview'
+            ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
+            : 'hover:bg-slate-800/70 text-slate-300'
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          <LayoutDashboard className="w-4 h-4" />
+          <span>نظرة عامة وإحصائيات</span>
+        </div>
+      </button>
+
+      <button
+        onClick={() => {
+          setActiveTab('landingPage');
+          setEditingUnit(null);
+          setEditingProject(null);
+          setMobileMenuOpen(false);
+        }}
+        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
+          activeTab === 'landingPage'
+            ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
+            : 'hover:bg-slate-800/70 text-slate-300'
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          <Sparkles className="w-4 h-4 text-amber-400" />
+          <span>إحصائيات وفيديو الرئيسية</span>
+        </div>
+        <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold">
+          حي
+        </span>
+      </button>
+
+      <div className="pt-2.5 px-3 py-1 text-[10px] font-black uppercase text-slate-500 tracking-wider">
+        المشروعات والوحدات
+      </div>
+
+      <button
+        onClick={() => {
+          setActiveTab('cities');
+          setEditingCity(null);
+          setMobileMenuOpen(false);
+        }}
+        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
+          activeTab === 'cities'
+            ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
+            : 'hover:bg-slate-800/70 text-slate-300'
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          <Globe className="w-4 h-4" />
+          <span>المدن والمحافظات</span>
+        </div>
+        <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">
+          {cities.length}
+        </span>
+      </button>
+
+      <button
+        onClick={() => {
+          setActiveTab('areas');
+          setEditingArea(null);
+          setMobileMenuOpen(false);
+        }}
+        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
+          activeTab === 'areas'
+            ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
+            : 'hover:bg-slate-800/70 text-slate-300'
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          <MapPin className="w-4 h-4" />
+          <span>المناطق والأحياء</span>
+        </div>
+        <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">
+          {areas.length}
+        </span>
+      </button>
+
+      <button
+        onClick={() => {
+          setActiveTab('projects');
+          setEditingProject(null);
+          setMobileMenuOpen(false);
+        }}
+        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
+          activeTab === 'projects'
+            ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
+            : 'hover:bg-slate-800/70 text-slate-300'
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          <Building2 className="w-4 h-4" />
+          <span>المشروعات السكنية</span>
+        </div>
+        <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">
+          {projects.length}
+        </span>
+      </button>
+
+      <button
+        onClick={() => {
+          setActiveTab('units');
+          setEditingUnit(null);
+          setMobileMenuOpen(false);
+        }}
+        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
+          activeTab === 'units'
+            ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
+            : 'hover:bg-slate-800/70 text-slate-300'
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          <HomeIcon className="w-4 h-4" />
+          <span>الوحدات العقارية</span>
+        </div>
+        <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">
+          {units.length}
+        </span>
+      </button>
+
+      <button
+        onClick={() => {
+          setActiveTab('commercial');
+          setEditingCommercial(null);
+          setMobileMenuOpen(false);
+        }}
+        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
+          activeTab === 'commercial'
+            ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
+            : 'hover:bg-slate-800/70 text-slate-300'
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          <ShoppingBag className="w-4 h-4" />
+          <span>المشروعات التجارية</span>
+        </div>
+        <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">
+          {commercials.length}
+        </span>
+      </button>
+
+      <div className="pt-2.5 px-3 py-1 text-[10px] font-black uppercase text-slate-500 tracking-wider">
+        المحتوى والتشطيبات
+      </div>
+
+      <button
+        onClick={() => {
+          setActiveTab('finishing');
+          setEditingFinishCat(null);
+          setEditingFinishItem(null);
+          setMobileMenuOpen(false);
+        }}
+        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
+          activeTab === 'finishing'
+            ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
+            : 'hover:bg-slate-800/70 text-slate-300'
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          <Paintbrush className="w-4 h-4 text-emerald-400" />
+          <span>أقسام ونماذج التشطيب</span>
+        </div>
+        <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">
+          {finishCategories.length}
+        </span>
+      </button>
+
+      <button
+        onClick={() => {
+          setActiveTab('media');
+          setEditingArticle(null);
+          setEditingMediaCat(null);
+          setMobileMenuOpen(false);
+        }}
+        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
+          activeTab === 'media'
+            ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
+            : 'hover:bg-slate-800/70 text-slate-300'
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          <Newspaper className="w-4 h-4" />
+          <span>المركز الإعلامي والمقالات</span>
+        </div>
+        <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">
+          {articles.length}
+        </span>
+      </button>
+
+      <button
+        onClick={() => {
+          setActiveTab('whyUs');
+          setEditingWhyUs(null);
+          setMobileMenuOpen(false);
+        }}
+        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
+          activeTab === 'whyUs'
+            ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
+            : 'hover:bg-slate-800/70 text-slate-300'
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          <HelpCircle className="w-4 h-4 text-amber-300" />
+          <span>تعديل لماذا قنديل</span>
+        </div>
+        <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">
+          {whyUsList.length}
+        </span>
+      </button>
+
+      <button
+        onClick={() => {
+          setActiveTab('sliders');
+          setEditingSlider(null);
+          setMobileMenuOpen(false);
+        }}
+        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
+          activeTab === 'sliders'
+            ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
+            : 'hover:bg-slate-800/70 text-slate-300'
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          <Sliders className="w-4 h-4" />
+          <span>سلايدر الرئيسية</span>
+        </div>
+        <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">
+          {sliders.length}
+        </span>
+      </button>
+
+      <button
+        onClick={() => {
+          setActiveTab('coverImages');
+          setEditingCover(null);
+          setMobileMenuOpen(false);
+        }}
+        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
+          activeTab === 'coverImages'
+            ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
+            : 'hover:bg-slate-800/70 text-slate-300'
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          <Layers className="w-4 h-4 text-cyan-400" />
+          <span>كفرات وبنرات الصفحات</span>
+        </div>
+        <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">
+          {coverImages.length}
+        </span>
+      </button>
+
+      <div className="pt-2.5 px-3 py-1 text-[10px] font-black uppercase text-slate-500 tracking-wider">
+        خدمة العملاء والاتصال
+      </div>
+
+      <button
+        onClick={() => {
+          setActiveTab('contacts');
+          setMobileMenuOpen(false);
+        }}
+        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
+          activeTab === 'contacts'
+            ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
+            : 'hover:bg-slate-800/70 text-slate-300'
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          <Mail className="w-4 h-4" />
+          <span>طلبات ورسائل العملاء</span>
+        </div>
+        {newContactsCount > 0 && (
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500 text-white font-bold animate-pulse">
+            {newContactsCount} جديد
+          </span>
+        )}
+      </button>
+
+      <button
+        onClick={() => {
+          setActiveTab('settings');
+          setMobileMenuOpen(false);
+        }}
+        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
+          activeTab === 'settings'
+            ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
+            : 'hover:bg-slate-800/70 text-slate-300'
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          <Settings className="w-4 h-4" />
+          <span>روابط وإعدادات التواصل</span>
+        </div>
+      </button>
+    </>
+  );
+
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col md:flex-row text-right bg-slate-50" dir="rtl">
+    <div className="h-screen w-full overflow-hidden flex flex-col md:flex-row text-right bg-slate-50" dir="rtl">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 left-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-slate-700 animate-bounce">
@@ -1163,9 +1477,128 @@ export const Dashboard = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* FIXED SIDEBAR (Zero outer scroll, independent navigation) */}
+      {/* MOBILE TOP BAR (Only visible on mobile screens < md) */}
       {/* ========================================================================= */}
-      <aside className="w-full md:w-72 h-auto md:h-screen flex-shrink-0 bg-slate-900 text-slate-300 flex flex-col justify-between border-l border-slate-800 select-none z-30">
+      <header className="md:hidden bg-slate-900 text-white px-4 py-3 border-b border-slate-800 flex items-center justify-between z-40 flex-shrink-0">
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(true)}
+            className="p-2 -mr-1 rounded-xl bg-slate-800 text-white hover:bg-slate-700 active:scale-95 transition"
+            aria-label="قائمة التحكم"
+          >
+            <Menu className="w-5 h-5 text-white" />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#d61c23] to-[#f59e0b] flex items-center justify-center text-white font-black text-sm shadow">
+              ق
+            </div>
+            <div>
+              <div className="text-xs font-black text-white leading-tight">قنديل العقارية</div>
+              <div className="text-[10px] text-emerald-400 font-semibold truncate max-w-[140px]">
+                {activeTab === 'overview' && 'نظرة عامة وإحصائيات'}
+                {activeTab === 'landingPage' && 'إحصائيات وفيديو'}
+                {activeTab === 'cities' && 'المدن والمحافظات'}
+                {activeTab === 'areas' && 'المناطق والأحياء'}
+                {activeTab === 'projects' && 'المشروعات السكنية'}
+                {activeTab === 'units' && 'الوحدات العقارية'}
+                {activeTab === 'commercial' && 'المشروعات التجارية'}
+                {activeTab === 'finishing' && 'أقسام التشطيبات'}
+                {activeTab === 'media' && 'المركز الإعلامي'}
+                {activeTab === 'whyUs' && 'لماذا قنديل'}
+                {activeTab === 'sliders' && 'سلايدر الرئيسية'}
+                {activeTab === 'coverImages' && 'كفرات وبنرات'}
+                {activeTab === 'contacts' && 'طلبات العملاء'}
+                {activeTab === 'settings' && 'إعدادات الشركة'}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={loadAllData}
+            title="تحديث البيانات"
+            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[#d61c23]' : ''}`} />
+          </button>
+          <Link
+            to="/"
+            target="_blank"
+            title="معاينة الموقع العام"
+            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+          >
+            <ExternalLink className="w-4 h-4" />
+          </Link>
+        </div>
+      </header>
+
+      {/* ========================================================================= */}
+      {/* MOBILE DRAWER (Only rendered when open on mobile screens < md) */}
+      {/* ========================================================================= */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div className="fixed top-0 right-0 bottom-0 w-72 max-w-[85vw] bg-slate-900 text-slate-300 shadow-2xl flex flex-col justify-between z-50 animate-in slide-in-from-right duration-200">
+            <div className="flex flex-col h-full overflow-hidden">
+              <div className="p-4 border-b border-slate-800/80 flex items-center justify-between flex-shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#d61c23] to-[#f59e0b] flex items-center justify-center text-white font-black shadow-lg">
+                    ق
+                  </div>
+                  <div>
+                    <h2 className="text-xs font-black text-white">لوحة تحكم قنديل</h2>
+                    <span className="text-[10px] text-emerald-400 font-semibold">أدمن 2026</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                  aria-label="إغلاق"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <nav className="flex-1 overflow-y-auto p-3 space-y-1 text-xs font-medium custom-scrollbar">
+                {renderNavLinks()}
+              </nav>
+
+              <div className="p-3 border-t border-slate-800 flex-shrink-0">
+                <div className="flex items-center justify-between px-3 py-2 bg-slate-800/50 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
+                      A
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-bold text-white leading-tight">Admin Kandil</p>
+                      <span className="text-[10px] text-slate-400">مدير النظام</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    title="تسجيل الخروج"
+                    className="text-slate-400 hover:text-red-400 p-1.5 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* DESKTOP FIXED SIDEBAR (Hidden on mobile, visible md:flex) */}
+      {/* ========================================================================= */}
+      <aside className="hidden md:flex md:w-72 md:h-screen flex-shrink-0 bg-slate-900 text-slate-300 flex-col justify-between border-l border-slate-800 select-none z-30">
         <div className="flex flex-col h-full overflow-hidden">
           {/* Brand Header (Fixed) */}
           <div className="p-5 border-b border-slate-800/80 flex items-center justify-between flex-shrink-0">
@@ -1191,301 +1624,9 @@ export const Dashboard = () => {
             </Link>
           </div>
 
-          {/* Navigation Links (Scrolls independently within sidebar only) */}
+          {/* Navigation Links */}
           <nav className="flex-1 overflow-y-auto p-3 space-y-1 text-xs font-medium custom-scrollbar">
-            <div className="px-3 py-1 text-[10px] font-black uppercase text-slate-500 tracking-wider">
-              الرئيسية والإحصائيات
-            </div>
-
-            <button
-              onClick={() => {
-                setActiveTab('overview');
-                setEditingUnit(null);
-                setEditingProject(null);
-              }}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
-                activeTab === 'overview'
-                  ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
-                  : 'hover:bg-slate-800/70 text-slate-300'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <LayoutDashboard className="w-4 h-4" />
-                <span>نظرة عامة وإحصائيات</span>
-              </div>
-            </button>
-
-            <button
-              onClick={() => {
-                setActiveTab('landingPage');
-                setEditingUnit(null);
-                setEditingProject(null);
-              }}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
-                activeTab === 'landingPage'
-                  ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
-                  : 'hover:bg-slate-800/70 text-slate-300'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Sparkles className="w-4 h-4 text-amber-400" />
-                <span>إحصائيات وفيديو الرئيسية</span>
-              </div>
-              <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold">
-                حي
-              </span>
-            </button>
-
-            <div className="pt-2.5 px-3 py-1 text-[10px] font-black uppercase text-slate-500 tracking-wider">
-              المشروعات والوحدات
-            </div>
-
-            <button
-              onClick={() => {
-                setActiveTab('cities');
-                setEditingCity(null);
-              }}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
-                activeTab === 'cities'
-                  ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
-                  : 'hover:bg-slate-800/70 text-slate-300'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Globe className="w-4 h-4" />
-                <span>المدن والمحافظات</span>
-              </div>
-              <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">
-                {cities.length}
-              </span>
-            </button>
-
-            <button
-              onClick={() => {
-                setActiveTab('areas');
-                setEditingArea(null);
-              }}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
-                activeTab === 'areas'
-                  ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
-                  : 'hover:bg-slate-800/70 text-slate-300'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <MapPin className="w-4 h-4" />
-                <span>المناطق والأحياء</span>
-              </div>
-              <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">
-                {areas.length}
-              </span>
-            </button>
-
-            <button
-              onClick={() => {
-                setActiveTab('projects');
-                setEditingProject(null);
-              }}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
-                activeTab === 'projects'
-                  ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
-                  : 'hover:bg-slate-800/70 text-slate-300'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Building2 className="w-4 h-4" />
-                <span>المشروعات السكنية</span>
-              </div>
-              <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">
-                {projects.length}
-              </span>
-            </button>
-
-            <button
-              onClick={() => {
-                setActiveTab('units');
-                setEditingUnit(null);
-              }}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
-                activeTab === 'units'
-                  ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
-                  : 'hover:bg-slate-800/70 text-slate-300'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <HomeIcon className="w-4 h-4" />
-                <span>الوحدات العقارية</span>
-              </div>
-              <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">
-                {units.length}
-              </span>
-            </button>
-
-            <button
-              onClick={() => {
-                setActiveTab('commercial');
-                setEditingCommercial(null);
-              }}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
-                activeTab === 'commercial'
-                  ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
-                  : 'hover:bg-slate-800/70 text-slate-300'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <ShoppingBag className="w-4 h-4" />
-                <span>المشروعات التجارية</span>
-              </div>
-              <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">
-                {commercials.length}
-              </span>
-            </button>
-
-            <div className="pt-2.5 px-3 py-1 text-[10px] font-black uppercase text-slate-500 tracking-wider">
-              المحتوى والتشطيبات
-            </div>
-
-            <button
-              onClick={() => {
-                setActiveTab('finishing');
-                setEditingFinishCat(null);
-                setEditingFinishItem(null);
-              }}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
-                activeTab === 'finishing'
-                  ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
-                  : 'hover:bg-slate-800/70 text-slate-300'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Paintbrush className="w-4 h-4 text-emerald-400" />
-                <span>أقسام ونماذج التشطيب</span>
-              </div>
-              <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">
-                {finishCategories.length}
-              </span>
-            </button>
-
-            <button
-              onClick={() => {
-                setActiveTab('media');
-                setEditingArticle(null);
-                setEditingMediaCat(null);
-              }}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
-                activeTab === 'media'
-                  ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
-                  : 'hover:bg-slate-800/70 text-slate-300'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Newspaper className="w-4 h-4" />
-                <span>المركز الإعلامي والمقالات</span>
-              </div>
-              <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">
-                {articles.length}
-              </span>
-            </button>
-
-            <button
-              onClick={() => {
-                setActiveTab('whyUs');
-                setEditingWhyUs(null);
-              }}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
-                activeTab === 'whyUs'
-                  ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
-                  : 'hover:bg-slate-800/70 text-slate-300'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <HelpCircle className="w-4 h-4 text-amber-300" />
-                <span>تعديل لماذا قنديل</span>
-              </div>
-              <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">
-                {whyUsList.length}
-              </span>
-            </button>
-
-            <button
-              onClick={() => {
-                setActiveTab('sliders');
-                setEditingSlider(null);
-              }}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
-                activeTab === 'sliders'
-                  ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
-                  : 'hover:bg-slate-800/70 text-slate-300'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Sliders className="w-4 h-4" />
-                <span>سلايدر الرئيسية</span>
-              </div>
-              <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">
-                {sliders.length}
-              </span>
-            </button>
-
-            <button
-              onClick={() => {
-                setActiveTab('coverImages');
-                setEditingCover(null);
-              }}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
-                activeTab === 'coverImages'
-                  ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
-                  : 'hover:bg-slate-800/70 text-slate-300'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Layers className="w-4 h-4 text-cyan-400" />
-                <span>كفرات وبنرات الصفحات</span>
-              </div>
-              <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">
-                {coverImages.length}
-              </span>
-            </button>
-
-            <div className="pt-2.5 px-3 py-1 text-[10px] font-black uppercase text-slate-500 tracking-wider">
-              خدمة العملاء والاتصال
-            </div>
-
-            <button
-              onClick={() => {
-                setActiveTab('contacts');
-              }}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
-                activeTab === 'contacts'
-                  ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
-                  : 'hover:bg-slate-800/70 text-slate-300'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Mail className="w-4 h-4" />
-                <span>طلبات ورسائل العملاء</span>
-              </div>
-              {newContactsCount > 0 && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500 text-white font-bold animate-pulse">
-                  {newContactsCount} جديد
-                </span>
-              )}
-            </button>
-
-            <button
-              onClick={() => {
-                setActiveTab('settings');
-              }}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
-                activeTab === 'settings'
-                  ? 'bg-[#d61c23] text-white font-bold shadow-md shadow-[#d61c23]/30'
-                  : 'hover:bg-slate-800/70 text-slate-300'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Settings className="w-4 h-4" />
-                <span>روابط وإعدادات التواصل</span>
-              </div>
-            </button>
+            {renderNavLinks()}
           </nav>
 
           {/* Footer Actions (Fixed) */}
@@ -1513,12 +1654,12 @@ export const Dashboard = () => {
       </aside>
 
       {/* ========================================================================= */}
-      {/* MAIN CONTENT AREA (Own smooth scroll, fully independent) */}
+      {/* MAIN CONTENT AREA (Own smooth scroll, fully responsive) */}
       {/* ========================================================================= */}
-      <main className="flex-1 h-screen overflow-y-auto p-6 md:p-10 flex flex-col justify-between">
+      <main className="flex-1 h-[calc(100vh-57px)] md:h-screen overflow-y-auto p-4 sm:p-6 md:p-10 flex flex-col justify-between w-full min-w-0 max-w-full">
         <div className="space-y-6">
           {/* Header Bar */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-gray-200">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-gray-200">
             <div>
               <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
                 <span>لوحة التحكم</span>
@@ -1540,7 +1681,7 @@ export const Dashboard = () => {
                   {activeTab === 'settings' && 'إعدادات الشركة وروابط التواصل'}
                 </span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-black text-gray-900">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900">
                 {activeTab === 'overview' && 'نظرة عامة على النظام'}
                 {activeTab === 'landingPage' && 'التحكم في فيديو وإحصائيات الرئيسية'}
                 {activeTab === 'cities' && (editingCity ? 'نموذج المدينة' : 'المدن والمحافظات')}
@@ -1558,10 +1699,10 @@ export const Dashboard = () => {
               </h1>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <button
                 onClick={loadAllData}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 text-xs font-bold transition shadow-sm"
+                className="flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 text-xs font-bold transition shadow-sm"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#d61c23]' : ''}`} />
                 <span>تحديث البيانات</span>
@@ -1569,10 +1710,11 @@ export const Dashboard = () => {
               <Link
                 to="/"
                 target="_blank"
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-xs font-bold transition shadow-sm"
+                className="flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-xs font-bold transition shadow-sm"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
-                <span>معاينة الموقع</span>
+                <span className="hidden sm:inline">معاينة الموقع العام</span>
+                <span className="sm:hidden">الموقع</span>
               </Link>
             </div>
           </div>

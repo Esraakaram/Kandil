@@ -2,13 +2,28 @@ const API_BASE = '/api';
 
 export function getImageUrl(imageName) {
   if (!imageName || imageName === 'null' || imageName === 'undefined' || imageName === '') {
-    return 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80';
+    return '/assets/Images/sliders/e47551a2-8091-439c-aca7-e32ca4629129.png';
   }
   if (imageName.startsWith('http://') || imageName.startsWith('https://')) {
     return imageName;
   }
   if (imageName.startsWith('/')) {
     return imageName;
+  }
+  if (
+    imageName === 'e47551a2-8091-439c-aca7-e32ca4629129.png' ||
+    imageName === '39cecd18-7c18-4f0c-8a2e-f23f0f993896.png'
+  ) {
+    return `/assets/Images/sliders/${imageName}`;
+  }
+  if (
+    imageName === '116724e6-b4f7-4e6a-9abb-7286e1bd6ca5.png' ||
+    imageName === '4d75240c-4ffa-477a-a376-ea3fc6d4d5ad.png' ||
+    imageName === '7b9ee6ec-da3f-4548-bf9f-e77f204ba500.png' ||
+    imageName === 'fb22a711-1636-41c8-9266-d6530d87f084.jpg' ||
+    imageName === 'fdfa0712-ca64-4938-bd07-21cc8ec03430.png'
+  ) {
+    return `/assets/Images/whyus/${imageName}`;
   }
   // Try live API upload host
   return `https://api.kandil-realestate.com/Uploads/${imageName}`;

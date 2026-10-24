@@ -106,8 +106,7 @@ export const Home = () => {
                 alt="Kandil Hero"
                 className="w-full h-full object-cover object-center filter brightness-60"
                 onError={(e) => {
-                  (e.target ).src =
-                    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80';
+                  e.target.src = '/assets/Images/sliders/e47551a2-8091-439c-aca7-e32ca4629129.png';
                 }}
               />
               {/* Gradient overlay */}

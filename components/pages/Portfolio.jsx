@@ -119,10 +119,10 @@ export const Portfolio = () => {
       <section className="max-w-7xl mx-auto px-4">
         <div className="bg-white p-4 sm:p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Main View Mode Selector */}
-          <div className="flex items-center gap-2 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
             <button
               onClick={() => setActiveTab('projects')}
-              className={`flex-1 md:flex-none px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all ${
+              className={`flex-1 md:flex-none px-4 sm:px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all ${
                 activeTab === 'projects'
                   ? 'bg-[#d61c23] text-white shadow-md'
                   : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200'
@@ -134,7 +134,7 @@ export const Portfolio = () => {
 
             <button
               onClick={() => setActiveTab('units')}
-              className={`flex-1 md:flex-none px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all ${
+              className={`flex-1 md:flex-none px-4 sm:px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all ${
                 activeTab === 'units'
                   ? 'bg-[#d61c23] text-white shadow-md'
                   : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200'

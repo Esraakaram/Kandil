@@ -46,15 +46,16 @@ export const DashboardLogin = () => {
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-gray-700 mb-1.5">اسم المستخدم</label>
+            <label className="block text-xs font-bold text-gray-700 mb-1.5">البريد الإلكتروني / اسم المستخدم</label>
             <div className="relative">
               <input
                 type="text"
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="admin"
+                placeholder="adminkandil@gmail.com"
                 className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs text-gray-800 focus:outline-none focus:border-[#d61c23]"
+                dir="ltr"
               />
               <User className="w-4 h-4 text-gray-400 absolute left-3 top-3.5" />
             </div>
@@ -68,8 +69,9 @@ export const DashboardLogin = () => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••"
+                placeholder="••••••••••••"
                 className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs text-gray-800 focus:outline-none focus:border-[#d61c23]"
+                dir="ltr"
               />
               <Lock className="w-4 h-4 text-gray-400 absolute left-3 top-3.5" />
             </div>
@@ -89,12 +91,6 @@ export const DashboardLogin = () => {
             <span>{loading ? 'جاري التحقق...' : 'تسجيل الدخول'}</span>
             <ArrowLeft className="w-4 h-4" />
           </button>
-
-          <div className="text-center pt-2">
-            <span className="text-[11px] text-gray-400 block">
-              بيانات الدخول التجريبية: المستخدم <strong>admin</strong> | كلمة المرور <strong>admin</strong>
-            </span>
-          </div>
         </form>
       </div>
     </div>
