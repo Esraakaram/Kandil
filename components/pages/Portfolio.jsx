@@ -14,7 +14,11 @@ import {
   Layers,
   Sparkles,
   ExternalLink,
-  Phone
+  Phone,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight
 } from 'lucide-react';
 import { api, getImageUrl } from '@/services/api';
 
@@ -24,7 +28,11 @@ export const Portfolio = () => {
   const [activeTab, setActiveTab] = useState('projects'); // 'projects' or 'units'
   const [expandedProjects, setExpandedProjects] = useState({});
   const [selectedArea, setSelectedArea] = useState('ALL');
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
+
+  const PROJECTS_PER_PAGE = 6;
+  const UNITS_PER_PAGE = 9;
 
   useEffect(() => {
     Promise.all([
@@ -77,6 +85,118 @@ export const Portfolio = () => {
     return (u.nameLocation && u.nameLocation.includes(selectedArea)) || u.project?.areaName === selectedArea;
   });
 
+  const currentList = activeTab === 'projects' ? filteredProjects : filteredSoldUnits;
+  const pageSize = activeTab === 'projects' ? PROJECTS_PER_PAGE : UNITS_PER_PAGE;
+  const totalPages = Math.ceil(currentList.length / pageSize);
+
+  const paginatedProjects = filteredProjects.slice(
+    (currentPage - 1) * PROJECTS_PER_PAGE,
+    currentPage * PROJECTS_PER_PAGE
+  );
+
+  const paginatedSoldUnits = filteredSoldUnits.slice(
+    (currentPage - 1) * UNITS_PER_PAGE,
+    currentPage * UNITS_PER_PAGE
+  );
+
+  const renderPagination = (totalItems) => {
+    if (totalPages <= 1) return null;
+
+    const startIdx = (currentPage - 1) * pageSize + 1;
+    const endIdx = Math.min(currentPage * pageSize, totalItems);
+
+    const getPageNumbers = () => {
+      const pages = [];
+      const maxVisible = 5;
+      let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+      let end = Math.min(totalPages, start + maxVisible - 1);
+      if (end - start + 1 < maxVisible) {
+        start = Math.max(1, end - maxVisible + 1);
+      }
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+      return pages;
+    };
+
+    return (
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 mt-10 border-t border-gray-200 text-xs text-gray-500">
+        <div>
+          عرض <span className="font-bold text-gray-900">{startIdx}</span> إلى{' '}
+          <span className="font-bold text-gray-900">{endIdx}</span> من أصل{' '}
+          <span className="font-bold text-gray-900">{totalItems}</span> {activeTab === 'projects' ? 'مشروع' : 'وحدة'}
+        </div>
+
+        <div className="flex items-center gap-1.5" dir="ltr">
+          <button
+            onClick={() => {
+              setCurrentPage(1);
+              window.scrollTo({ top: 400, behavior: 'smooth' });
+            }}
+            disabled={currentPage === 1}
+            className="p-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-30 disabled:pointer-events-none transition"
+            title="الصفحة الأولى"
+          >
+            <ChevronsLeft className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            onClick={() => {
+              setCurrentPage((prev) => Math.max(1, prev - 1));
+              window.scrollTo({ top: 400, behavior: 'smooth' });
+            }}
+            disabled={currentPage === 1}
+            className="p-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-30 disabled:pointer-events-none transition"
+            title="الصفحة السابقة"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+
+          {getPageNumbers().map((pg) => (
+            <button
+              key={pg}
+              onClick={() => {
+                setCurrentPage(pg);
+                window.scrollTo({ top: 400, behavior: 'smooth' });
+              }}
+              className={`min-w-[36px] h-[36px] px-2.5 rounded-xl font-bold transition flex items-center justify-center ${
+                pg === currentPage
+                  ? 'bg-[#d61c23] text-white shadow-sm'
+                  : 'border border-gray-200 bg-white hover:bg-gray-50 text-gray-700'
+              }`}
+            >
+              {pg}
+            </button>
+          ))}
+
+          <button
+            onClick={() => {
+              setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+              window.scrollTo({ top: 400, behavior: 'smooth' });
+            }}
+            disabled={currentPage === totalPages}
+            className="p-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-30 disabled:pointer-events-none transition"
+            title="الصفحة التالية"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            onClick={() => {
+              setCurrentPage(totalPages);
+              window.scrollTo({ top: 400, behavior: 'smooth' });
+            }}
+            disabled={currentPage === totalPages}
+            className="p-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-30 disabled:pointer-events-none transition"
+            title="الصفحة الأخيرة"
+          >
+            <ChevronsRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-16 pb-20 bg-gray-50/50">
       {/* 1. Hero Banner */}
@@ -117,50 +237,73 @@ export const Portfolio = () => {
 
       {/* 2. Controls & Tabs */}
       <section className="max-w-7xl mx-auto px-4">
-        <div className="bg-white p-4 sm:p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-          {/* Main View Mode Selector */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
-            <button
-              onClick={() => setActiveTab('projects')}
-              className={`flex-1 md:flex-none px-4 sm:px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all ${
-                activeTab === 'projects'
-                  ? 'bg-[#d61c23] text-white shadow-md'
-                  : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200'
-              }`}
-            >
-              <Building2 className="w-4 h-4" />
-              <span>مشروعات سابقة الأعمال بوحداتها ({portfolioProjects.length})</span>
-            </button>
+        <div className="bg-white p-5 sm:p-7 rounded-3xl border border-gray-100 shadow-sm space-y-5">
+          {/* Top Tier: View Mode Selector */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+            <div className="inline-flex p-1.5 bg-gray-100 rounded-2xl gap-1.5 w-full sm:w-auto">
+              <button
+                onClick={() => {
+                  setActiveTab('projects');
+                  setCurrentPage(1);
+                }}
+                className={`flex-1 sm:flex-none px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all ${
+                  activeTab === 'projects'
+                    ? 'bg-[#d61c23] text-white shadow-md'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
+                }`}
+              >
+                <Building2 className="w-4 h-4" />
+                <span>مشروعات سابقة الأعمال ({portfolioProjects.length})</span>
+              </button>
 
-            <button
-              onClick={() => setActiveTab('units')}
-              className={`flex-1 md:flex-none px-4 sm:px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all ${
-                activeTab === 'units'
-                  ? 'bg-[#d61c23] text-white shadow-md'
-                  : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200'
-              }`}
-            >
-              <Layers className="w-4 h-4" />
-              <span>كافة الوحدات المباعة ({soldUnits.length})</span>
-            </button>
+              <button
+                onClick={() => {
+                  setActiveTab('units');
+                  setCurrentPage(1);
+                }}
+                className={`flex-1 sm:flex-none px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all ${
+                  activeTab === 'units'
+                    ? 'bg-[#d61c23] text-white shadow-md'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
+                }`}
+              >
+                <Layers className="w-4 h-4" />
+                <span>الوحدات المباعة ({soldUnits.length})</span>
+              </button>
+            </div>
+
+            <div className="text-xs text-gray-500 font-semibold hidden md:block">
+              {activeTab === 'projects'
+                ? `عرض المشروعات السكنية المكتملة والمسلّمة`
+                : `استعراض الوحدات السكنية المسلّمة للعملاء`}
+            </div>
           </div>
 
-          {/* Area Filter Buttons */}
+          {/* Bottom Tier: Area Filter Pills */}
           {uniqueAreas.length > 2 && (
-            <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1">
-              {uniqueAreas.map((area) => (
-                <button
-                  key={area}
-                  onClick={() => setSelectedArea(area)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                    selectedArea === area
-                      ? 'bg-slate-900 text-white'
-                      : 'bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200'
-                  }`}
-                >
-                  {area === 'ALL' ? 'كافة المناطق' : area}
-                </button>
-              ))}
+            <div className="pt-4 border-t border-gray-100 flex flex-col md:flex-row md:items-center gap-3">
+              <div className="flex items-center gap-2 text-xs font-bold text-gray-700 shrink-0">
+                <MapPin className="w-4 h-4 text-[#d61c23]" />
+                <span>تصفية حسب المنطقة:</span>
+              </div>
+              <div className="flex items-center gap-2 overflow-x-auto w-full pb-1 scrollbar-thin">
+                {uniqueAreas.map((area) => (
+                  <button
+                    key={area}
+                    onClick={() => {
+                      setSelectedArea(area);
+                      setCurrentPage(1);
+                    }}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 ${
+                      selectedArea === area
+                        ? 'bg-slate-900 text-white shadow-sm'
+                        : 'bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200'
+                    }`}
+                  >
+                    {area === 'ALL' ? 'كافة المناطق' : area}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -187,7 +330,7 @@ export const Portfolio = () => {
                 </p>
               </div>
             ) : (
-              filteredProjects.map((project) => {
+              paginatedProjects.map((project) => {
                 const isExpanded = !!expandedProjects[project.id];
                 const unitsList = project.units || [];
 
@@ -335,76 +478,82 @@ export const Portfolio = () => {
                 );
               })
             )}
+
+            {renderPagination(filteredProjects.length)}
           </div>
         ) : (
           /* ============================================================== */
           /* MODE 2: كافة الوحدات المباعة والمسلمة (Flat Sold Units Grid) */
           /* ============================================================== */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredSoldUnits.length === 0 ? (
-              <div className="col-span-full bg-white p-12 rounded-3xl border border-dashed border-gray-200 text-center space-y-3">
-                <Layers className="w-12 h-12 text-gray-400 mx-auto" />
-                <h3 className="text-base font-bold text-gray-700">لا توجد وحدات مباعة معروضة حالياً</h3>
-              </div>
-            ) : (
-              filteredSoldUnits.map((unit) => (
-                <div
-                  key={unit.id}
-                  className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="relative h-56 overflow-hidden bg-gray-100">
-                      <img
-                        src={getImageUrl(unit.imageName)}
-                        alt={unit.title}
-                        className="w-full h-full object-cover grayscale-[20%] hover:grayscale-0 transition-all duration-300"
-                        onError={(e) => {
-                          e.target.src =
-                            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80';
-                        }}
-                      />
-                      <span className="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
-                        تم البيع والتسليم ✓
-                      </span>
-                    </div>
+          <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredSoldUnits.length === 0 ? (
+                <div className="col-span-full bg-white p-12 rounded-3xl border border-dashed border-gray-200 text-center space-y-3">
+                  <Layers className="w-12 h-12 text-gray-400 mx-auto" />
+                  <h3 className="text-base font-bold text-gray-700">لا توجد وحدات مباعة معروضة حالياً</h3>
+                </div>
+              ) : (
+                paginatedSoldUnits.map((unit) => (
+                  <div
+                    key={unit.id}
+                    className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="relative h-56 overflow-hidden bg-gray-100">
+                        <img
+                          src={getImageUrl(unit.imageName)}
+                          alt={unit.title}
+                          className="w-full h-full object-cover grayscale-[20%] hover:grayscale-0 transition-all duration-300"
+                          onError={(e) => {
+                            e.target.src =
+                              'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80';
+                          }}
+                        />
+                        <span className="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
+                          تم البيع والتسليم ✓
+                        </span>
+                      </div>
 
-                    <div className="p-6">
-                      <h3 className="font-bold text-base text-gray-900 mb-2 line-clamp-1">
-                        {unit.title}
-                      </h3>
-                      <p className="text-gray-500 text-xs mb-4 flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5 text-[#d61c23]" />
-                        <span>{unit.nameLocation || unit.project?.name || 'القاهرة الجديدة'}</span>
-                      </p>
+                      <div className="p-6">
+                        <h3 className="font-bold text-base text-gray-900 mb-2 line-clamp-1">
+                          {unit.title}
+                        </h3>
+                        <p className="text-gray-500 text-xs mb-4 flex items-center gap-1">
+                          <MapPin className="w-3.5 h-3.5 text-[#d61c23]" />
+                          <span>{unit.nameLocation || unit.project?.name || 'القاهرة الجديدة'}</span>
+                        </p>
 
-                      <div className="grid grid-cols-3 gap-2 py-3 border-y border-gray-100 text-gray-600 text-xs font-semibold">
-                        <div className="flex items-center gap-1 justify-center">
-                          <Maximize2 className="w-3.5 h-3.5 text-[#d61c23]" />
-                          <span>{unit.area} م²</span>
-                        </div>
-                        <div className="flex items-center gap-1 justify-center">
-                          <Bed className="w-3.5 h-3.5 text-[#d61c23]" />
-                          <span>{unit.numberRoom} غرف</span>
-                        </div>
-                        <div className="flex items-center gap-1 justify-center">
-                          <Bath className="w-3.5 h-3.5 text-[#d61c23]" />
-                          <span>{unit.numberBathroom} حمام</span>
+                        <div className="grid grid-cols-3 gap-2 py-3 border-y border-gray-100 text-gray-600 text-xs font-semibold">
+                          <div className="flex items-center gap-1 justify-center">
+                            <Maximize2 className="w-3.5 h-3.5 text-[#d61c23]" />
+                            <span>{unit.area} م²</span>
+                          </div>
+                          <div className="flex items-center gap-1 justify-center">
+                            <Bed className="w-3.5 h-3.5 text-[#d61c23]" />
+                            <span>{unit.numberRoom} غرف</span>
+                          </div>
+                          <div className="flex items-center gap-1 justify-center">
+                            <Bath className="w-3.5 h-3.5 text-[#d61c23]" />
+                            <span>{unit.numberBathroom} حمام</span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="p-6 pt-0">
-                    <Link
-                      to={`/unit/${unit.id}`}
-                      className="w-full block text-center py-2.5 bg-gray-50 hover:bg-[#d61c23] text-gray-700 hover:text-white font-bold text-xs rounded-xl transition-colors border border-gray-200"
-                    >
-                      معاينة تفاصيل الوحدة
-                    </Link>
+                    <div className="p-6 pt-0">
+                      <Link
+                        to={`/unit/${unit.id}`}
+                        className="w-full block text-center py-2.5 bg-gray-50 hover:bg-[#d61c23] text-gray-700 hover:text-white font-bold text-xs rounded-xl transition-colors border border-gray-200"
+                      >
+                        معاينة تفاصيل الوحدة
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              ))
-            )}
+                ))
+              )}
+            </div>
+
+            {renderPagination(filteredSoldUnits.length)}
           </div>
         )}
       </section>

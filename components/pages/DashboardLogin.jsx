@@ -53,7 +53,6 @@ export const DashboardLogin = () => {
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="adminkandil@gmail.com"
                 className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs text-gray-800 focus:outline-none focus:border-[#d61c23]"
                 dir="ltr"
               />
@@ -69,7 +68,6 @@ export const DashboardLogin = () => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••••••"
                 className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs text-gray-800 focus:outline-none focus:border-[#d61c23]"
                 dir="ltr"
               />

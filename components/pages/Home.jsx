@@ -92,7 +92,7 @@ export const Home = () => {
   return (
     <div className="space-y-16">
       {/* 1. Hero Carousel */}
-      <section className="relative min-h-[500px] sm:min-h-[580px] md:min-h-[640px] lg:h-[82vh] max-h-[850px] bg-slate-900 text-white overflow-hidden flex items-center">
+      <section className="relative h-[380px] sm:h-[480px] md:h-[580px] lg:h-[680px] bg-slate-950 text-white overflow-hidden">
         {validSliders.length > 0 ? (
           validSliders.map((slide, idx) => (
             <div
@@ -104,56 +104,16 @@ export const Home = () => {
               <img
                 src={getImageUrl(slide.mediaPath)}
                 alt="Kandil Hero"
-                className="w-full h-full object-cover object-center filter brightness-60"
+                className="w-full h-full object-cover object-center"
                 onError={(e) => {
                   e.target.src = '/assets/Images/sliders/e47551a2-8091-439c-aca7-e32ca4629129.png';
                 }}
               />
-              {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent"></div>
             </div>
           ))
         ) : (
           <div className="absolute inset-0 bg-[#26070a]"></div>
         )}
-
-        {/* Hero Content Overlay */}
-        <div className="relative z-20 max-w-7xl mx-auto px-4 w-full py-16 md:py-24 text-center md:text-right">
-          <div className="max-w-2xl bg-black/45 backdrop-blur-md p-6 sm:p-8 md:p-10 rounded-2xl border border-white/10 shadow-2xl">
-            <span className="inline-block px-4 py-1 rounded-full bg-[#f59e0b] text-[#26070a] text-xs md:text-sm font-extrabold uppercase tracking-wider mb-4 shadow">
-              خبرة تتجاوز 22 عاماً في التطوير العقاري
-            </span>
-
-            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black leading-tight text-white mb-4">
-              قنديل للاستثمار العقاري
-              <span className="block text-[#ff4d4f] text-xl sm:text-3xl md:text-4xl mt-2 font-bold">
-                وجهتك الأولى لامتلاك منزل المستقبل
-              </span>
-            </h1>
-
-            <p className="text-gray-200 text-xs sm:text-sm md:text-base leading-relaxed mb-8">
-              نقدم مشروعات سكنية وتجارية استثنائية بأرقى مواقع القاهرة الجديدة والتجمع الخامس مع أطول فترات سداد وأعلى جودة في التنفيذ.
-            </p>
-
-            <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-              <Link
-                to="/unit"
-                className="px-6 sm:px-7 py-3 sm:py-3.5 rounded-full bg-[#d61c23] hover:bg-[#b7151b] text-white font-bold text-sm sm:text-base shadow-xl flex items-center gap-2 transition-all hover:scale-103"
-              >
-                <span>تصفح الوحدات المتاحة</span>
-                <ArrowLeft className="w-5 h-5" />
-              </Link>
-
-              <a
-                href="tel:19473"
-                className="px-6 sm:px-7 py-3 sm:py-3.5 rounded-full bg-white/10 hover:bg-white text-white hover:text-[#d61c23] font-bold text-sm sm:text-base border border-white/30 backdrop-blur transition-all flex items-center gap-2"
-              >
-                <Phone className="w-4 h-4 text-[#f59e0b]" />
-                <span>اتصل بنا 19473</span>
-              </a>
-            </div>
-          </div>
-        </div>
 
         {/* Prev / Next Navigation Arrows */}
         {validSliders.length > 1 && (
