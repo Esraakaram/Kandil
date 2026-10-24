@@ -161,8 +161,8 @@ const ImageUploader = ({ label, value, onChange, placeholder = 'اختر صور�
         throw new Error('فشل رفع الصورة');
       }
     } catch (err) {
-      console.error(err);
-      setError('حدث خطأ أثناء رفع الصورة');
+      console.error('Image upload error:', err);
+      setError(err?.message || 'حدث خطأ أثناء رفع الصورة');
     } finally {
       setUploading(false);
     }
@@ -3216,9 +3216,12 @@ export const Dashboard = () => {
                         >
                           <div className="relative h-44 bg-slate-100">
                             <img
-                              src={getImageUrl(u.imageName)}
+                              src={getImageUrl(u.imageName, 'unit')}
                               alt={u.title}
                               className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.src = '/uploads/4dcb37c1-e2f2-4ab4-b62c-b88d90ead9d3.png';
+                              }}
                             />
                             <div className="absolute top-3 right-3 flex items-center gap-1.5">
                               <span

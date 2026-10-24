@@ -92,9 +92,9 @@ export const WhyUs = () => {
           />
         ) : (
           <img
-            src="/assets/Images/whyus/116724e6-b4f7-4e6a-9abb-7286e1bd6ca5.png"
+            src="/uploads/e47551a2-8091-439c-aca7-e32ca4629129.png"
             alt="لماذا قنديل"
-            className="absolute inset-0 w-full h-full object-cover filter brightness-30"
+            className="absolute inset-0 w-full h-full object-cover filter brightness-40"
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#26070a] via-[#26070a]/70 to-transparent"></div>
@@ -165,11 +165,11 @@ export const WhyUs = () => {
           </div>
 
           <div className="lg:col-span-5">
-            <div className="relative rounded-3xl overflow-hidden shadow-xl border border-gray-100 bg-white group">
+            <div className="relative rounded-3xl overflow-hidden shadow-xl border border-gray-100 bg-white group h-[320px] sm:h-[380px] md:h-[420px]">
               <img
-                src="/assets/Images/whyus/116724e6-b4f7-4e6a-9abb-7286e1bd6ca5.png"
+                src="/uploads/c0e82ea2-2b62-4d93-9803-d29ef73ac030.png"
                 alt="شركة قنديل للاستثمار العقاري"
-                className="w-full h-auto object-cover group-hover:scale-103 transition-transform duration-500"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 onError={(e) => {
                   e.target.src = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80';
                 }}
@@ -278,15 +278,15 @@ export const WhyUs = () => {
         </div>
       </section>
 
-      {/* 4. Section: Finishing & Architectural Quality (Old Site PageSection 5) */}
+      {/* 4. Section: Finishing & Architectural Quality */}
       <section className="max-w-7xl mx-auto px-4">
         <div className="bg-white rounded-3xl p-6 sm:p-10 md:p-12 shadow-sm border border-gray-100 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-5 order-2 lg:order-1">
-            <div className="rounded-3xl overflow-hidden shadow-xl border border-gray-100 bg-white group">
+            <div className="rounded-3xl overflow-hidden shadow-xl border border-gray-100 bg-white group h-[300px] sm:h-[360px] md:h-[400px]">
               <img
-                src="/assets/Images/whyus/fdfa0712-ca64-4938-bd07-21cc8ec03430.png"
-                alt="معايير التشطيب والجودة"
-                className="w-full h-auto object-cover group-hover:scale-103 transition-transform duration-500"
+                src="/uploads/whyus-philosophy.jpg"
+                alt="فلسفتنا في الجودة والتصميم"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 onError={(e) => {
                   e.target.src = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80';
                 }}
@@ -295,9 +295,9 @@ export const WhyUs = () => {
           </div>
 
           <div className="lg:col-span-7 space-y-6 order-1 lg:order-2">
-            <div className="inline-flex items-center gap-2 text-[#d61c23] font-black text-xs uppercase tracking-wider bg-red-50 px-3 py-1.5 rounded-lg">
+            <div className="inline-flex items-center gap-2 text-[#d61c23] font-black text-xs uppercase tracking-wider bg-red-50 px-3.5 py-1.5 rounded-full border border-red-100">
               <Award className="w-4 h-4" />
-              <span>الجودة والتشطيبات الفاخرة</span>
+              <span>فلسفتنا في الجودة والتصميم المعماري</span>
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-snug">
@@ -334,13 +334,13 @@ export const WhyUs = () => {
         </div>
       </section>
 
-      {/* 5. Section: Strategic Vision (Old Site PageSection 6) */}
+      {/* 5. Section: Strategic Vision */}
       <section className="max-w-7xl mx-auto px-4">
         <div className="bg-white rounded-3xl p-6 sm:p-10 md:p-12 shadow-sm border border-gray-100 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-7 space-y-6">
-            <div className="inline-flex items-center gap-2 text-[#d61c23] font-black text-xs uppercase tracking-wider bg-red-50 px-3 py-1.5 rounded-lg">
+            <div className="inline-flex items-center gap-2 text-[#d61c23] font-black text-xs uppercase tracking-wider bg-red-50 px-3.5 py-1.5 rounded-full border border-red-100">
               <Target className="w-4 h-4" />
-              <span>الرؤية المستقبلية والشراكة المجتمعية</span>
+              <span>رسالتنا والشراكة المجتمعية المستدامة</span>
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-snug">
@@ -363,13 +363,13 @@ export const WhyUs = () => {
           </div>
 
           <div className="lg:col-span-5">
-            <div className="rounded-3xl overflow-hidden shadow-xl border border-gray-100 bg-white group">
+            <div className="rounded-3xl overflow-hidden shadow-xl border border-gray-100 bg-white group h-[300px] sm:h-[360px] md:h-[400px]">
               <img
-                src="/assets/Images/whyus/4d75240c-4ffa-477a-a376-ea3fc6d4d5ad.png"
-                alt="الرؤية المستقبلية"
-                className="w-full h-auto object-cover group-hover:scale-103 transition-transform duration-500"
+                src="/uploads/whyus-mission.jpg"
+                alt="رسالتنا والحلول العقارية"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 onError={(e) => {
-                  e.target.src = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80';
+                  e.target.src = 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80';
                 }}
               />
             </div>
@@ -377,26 +377,26 @@ export const WhyUs = () => {
         </div>
       </section>
 
-      {/* 6. Section: Expansion & Community Leadership (Old Site PageSection 7) */}
+      {/* 6. Section: Expansion & Community Leadership */}
       <section className="max-w-7xl mx-auto px-4">
         <div className="bg-white rounded-3xl p-6 sm:p-10 md:p-12 shadow-sm border border-gray-100 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-5 order-2 lg:order-1">
-            <div className="rounded-3xl overflow-hidden shadow-xl border border-gray-100 bg-white group">
+            <div className="rounded-3xl overflow-hidden shadow-xl border border-gray-100 bg-white group h-[300px] sm:h-[360px] md:h-[400px]">
               <img
-                src="/assets/Images/whyus/7b9ee6ec-da3f-4548-bf9f-e77f204ba500.png"
-                alt="الريادة والتوسع الجغرافي"
-                className="w-full h-auto object-cover group-hover:scale-103 transition-transform duration-500"
+                src="/uploads/whyus-vision.jpg"
+                alt="أهدافنا ورؤيتنا التوسعية"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 onError={(e) => {
-                  e.target.src = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80';
+                  e.target.src = 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80';
                 }}
               />
             </div>
           </div>
 
           <div className="lg:col-span-7 space-y-6 order-1 lg:order-2">
-            <div className="inline-flex items-center gap-2 text-[#d61c23] font-black text-xs uppercase tracking-wider bg-red-50 px-3 py-1.5 rounded-lg">
+            <div className="inline-flex items-center gap-2 text-[#d61c23] font-black text-xs uppercase tracking-wider bg-red-50 px-3.5 py-1.5 rounded-full border border-red-100">
               <Sparkles className="w-4 h-4" />
-              <span>الريادة والتوسع الجغرافي</span>
+              <span>أهدافنا ورؤيتنا في الريادة والتوسع</span>
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-snug">

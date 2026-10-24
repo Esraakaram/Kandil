@@ -125,15 +125,15 @@ const WHYUS_IMAGES = new Set([
 export function getImageUrl(imageName, entityType = '') {
   if (!imageName || imageName === 'null' || imageName === 'undefined' || imageName === '') {
     if (entityType === 'unit') {
-      return '/assets/Images/units/4dcb37c1-e2f2-4ab4-b62c-b88d90ead9d3.png';
+      return '/uploads/4dcb37c1-e2f2-4ab4-b62c-b88d90ead9d3.png';
     }
     if (entityType === 'slider') {
-      return '/assets/Images/sliders/e47551a2-8091-439c-aca7-e32ca4629129.png';
+      return '/uploads/e47551a2-8091-439c-aca7-e32ca4629129.png';
     }
-    return '/assets/Images/projects/9921ac91-0ef8-4e80-add7-b0149521419a.png';
+    return '/uploads/9921ac91-0ef8-4e80-add7-b0149521419a.png';
   }
 
-  if (imageName.startsWith('http://') || imageName.startsWith('https://')) {
+  if (imageName.startsWith('data:image/') || imageName.startsWith('http://') || imageName.startsWith('https://')) {
     return imageName;
   }
   if (imageName.startsWith('/')) {
@@ -142,28 +142,8 @@ export function getImageUrl(imageName, entityType = '') {
 
   const cleanName = imageName.split('/').pop().split('?')[0];
 
-  if (UNIT_IMAGES.has(cleanName)) {
-    return `/assets/Images/units/${cleanName}`;
-  }
-  if (PROJECT_IMAGES.has(cleanName)) {
-    return `/assets/Images/projects/${cleanName}`;
-  }
-  if (SLIDER_IMAGES.has(cleanName)) {
-    return `/assets/Images/sliders/${cleanName}`;
-  }
-  if (WHYUS_IMAGES.has(cleanName)) {
-    return `/assets/Images/whyus/${cleanName}`;
-  }
-
-  if (entityType === 'unit') {
-    return `https://api.kandil-realestate.com/Uploads/Units/${cleanName}`;
-  }
-  if (entityType === 'project') {
-    return `https://api.kandil-realestate.com/Uploads/Projects/${cleanName}`;
-  }
-
-  // Try live API upload host
-  return `https://api.kandil-realestate.com/Uploads/${cleanName}`;
+  // All unit, project, slider, whyus and uploaded images are hosted under /uploads/
+  return `/uploads/${cleanName}`;
 }
 
 export const api = {
@@ -327,7 +307,10 @@ export const api = {
       method: 'POST',
       body: formData
     });
-    if (!res.ok) throw new Error('فشل رفع الصورة');
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'فشل رفع الصورة');
+    }
     return res.json();
   }
 };
