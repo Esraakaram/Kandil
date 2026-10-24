@@ -100,9 +100,13 @@ export const SearchResults = () => {
                 <div>
                   <div className="relative h-52 overflow-hidden bg-gray-100">
                     <img
-                      src={getImageUrl(unit.imageName)}
+                      src={getImageUrl(unit.imageName, 'unit')}
                       alt={unit.title}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target).src =
+                          '/assets/Images/units/4dcb37c1-e2f2-4ab4-b62c-b88d90ead9d3.png';
+                      }}
                     />
                     <span
                       className={`absolute top-3 right-3 text-xs font-bold px-3 py-1 rounded-full shadow ${

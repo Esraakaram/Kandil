@@ -92,7 +92,7 @@ export const Home = () => {
   return (
     <div className="space-y-16">
       {/* 1. Hero Carousel */}
-      <section className="relative h-[380px] sm:h-[480px] md:h-[580px] lg:h-[680px] bg-slate-950 text-white overflow-hidden">
+      <section className="relative min-h-[480px] sm:min-h-[540px] md:min-h-[600px] lg:h-[75vh] max-h-[780px] bg-slate-950 text-white overflow-hidden flex items-center">
         {validSliders.length > 0 ? (
           validSliders.map((slide, idx) => (
             <div
@@ -102,7 +102,7 @@ export const Home = () => {
               }`}
             >
               <img
-                src={getImageUrl(slide.mediaPath)}
+                src={getImageUrl(slide.mediaPath, 'slider')}
                 alt="Kandil Hero"
                 className="w-full h-full object-cover object-center"
                 onError={(e) => {
@@ -114,6 +114,44 @@ export const Home = () => {
         ) : (
           <div className="absolute inset-0 bg-[#26070a]"></div>
         )}
+
+        {/* Floating Hero Content Card */}
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-12 md:py-20 flex items-center">
+          <div className="max-w-2xl bg-black/60 backdrop-blur-md p-6 sm:p-8 md:p-10 rounded-3xl border border-white/20 shadow-2xl text-right">
+            <span className="inline-block px-4 py-1.5 rounded-full bg-[#f59e0b] text-[#26070a] text-xs sm:text-sm font-extrabold uppercase tracking-wider mb-4 shadow">
+              خبرة تتجاوز 22 عاماً في التطوير العقاري
+            </span>
+
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black leading-tight text-white mb-4">
+              قنديل للاستثمار العقاري
+              <span className="block text-[#ff4d4f] text-xl sm:text-3xl md:text-4xl mt-2 font-bold">
+                وجهتك الأولى لامتلاك منزل المستقبل
+              </span>
+            </h1>
+
+            <p className="text-gray-200 text-xs sm:text-sm md:text-base leading-relaxed mb-8">
+              نقدم مشروعات سكنية وتجارية استثنائية بأرقى مواقع القاهرة الجديدة والتجمع الخامس مع أطول فترات سداد وأعلى جودة في التنفيذ.
+            </p>
+
+            <div className="flex flex-wrap gap-4 items-center">
+              <Link
+                to="/unit"
+                className="px-6 sm:px-7 py-3 sm:py-3.5 rounded-full bg-[#d61c23] hover:bg-[#b7151b] text-white font-bold text-sm sm:text-base shadow-xl flex items-center gap-2 transition-all hover:scale-103"
+              >
+                <span>تصفح الوحدات المتاحة</span>
+                <ArrowLeft className="w-5 h-5" />
+              </Link>
+
+              <a
+                href="tel:19473"
+                className="px-6 sm:px-7 py-3 sm:py-3.5 rounded-full bg-white/10 hover:bg-white text-white hover:text-[#d61c23] font-bold text-sm sm:text-base border border-white/30 backdrop-blur transition-all flex items-center gap-2"
+              >
+                <Phone className="w-4 h-4 text-[#f59e0b]" />
+                <span>اتصل بنا 19473</span>
+              </a>
+            </div>
+          </div>
+        </div>
 
         {/* Prev / Next Navigation Arrows */}
         {validSliders.length > 1 && (
@@ -358,12 +396,12 @@ export const Home = () => {
                 {/* Image & Status Tag */}
                 <div className="relative h-56 overflow-hidden bg-gray-100">
                   <img
-                    src={getImageUrl(unit.imageName)}
+                    src={getImageUrl(unit.imageName, 'unit')}
                     alt={unit.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     onError={(e) => {
                       (e.target ).src =
-                        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80';
+                        '/assets/Images/units/4dcb37c1-e2f2-4ab4-b62c-b88d90ead9d3.png';
                     }}
                   />
                   {/* Status Badge */}

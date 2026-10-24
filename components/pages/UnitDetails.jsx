@@ -46,7 +46,7 @@ export const UnitDetails = () => {
       .then((data) => {
         setUnit(data);
         const cover = data.detailsCoverImage || data.imageName;
-        setActiveImage(getImageUrl(cover));
+        setActiveImage(getImageUrl(cover, 'unit'));
         setLoading(false);
       })
       .catch((err) => {
@@ -115,9 +115,9 @@ export const UnitDetails = () => {
     });
   }
 
-  const allImages = imageCandidates.map((img) => getImageUrl(img));
+  const allImages = imageCandidates.map((img) => getImageUrl(img, 'unit'));
   if (allImages.length === 0) {
-    allImages.push(getImageUrl('default'));
+    allImages.push(getImageUrl('', 'unit'));
   }
 
   // Safe normalize advantages

@@ -389,12 +389,12 @@ export const Units = () => {
                     <div>
                       <div className="relative h-52 overflow-hidden bg-gray-100">
                         <img
-                          src={getImageUrl(unit.imageName)}
+                          src={getImageUrl(unit.imageName, 'unit')}
                           alt={unit.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           onError={(e) => {
                             (e.target ).src =
-                              'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80';
+                              '/assets/Images/units/4dcb37c1-e2f2-4ab4-b62c-b88d90ead9d3.png';
                           }}
                         />
                         <span
@@ -476,12 +476,12 @@ export const Units = () => {
                   >
                     <div className="w-full md:w-56 h-40 shrink-0 rounded-xl overflow-hidden relative bg-gray-100">
                       <img
-                        src={getImageUrl(unit.imageName)}
+                        src={getImageUrl(unit.imageName, 'unit')}
                         alt={unit.title}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           (e.target ).src =
-                            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80';
+                            '/assets/Images/units/4dcb37c1-e2f2-4ab4-b62c-b88d90ead9d3.png';
                         }}
                       />
                       <span

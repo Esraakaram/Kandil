@@ -51,12 +51,12 @@ export const PaidUnits = () => {
               <div>
                 <div className="relative h-56 overflow-hidden bg-gray-100">
                   <img
-                    src={getImageUrl(unit.imageName)}
+                    src={getImageUrl(unit.imageName, 'unit')}
                     alt={unit.title}
                     className="w-full h-full object-cover grayscale-[30%] hover:grayscale-0 transition-all duration-300"
                     onError={(e) => {
                       (e.target ).src =
-                        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80';
+                        '/assets/Images/units/4dcb37c1-e2f2-4ab4-b62c-b88d90ead9d3.png';
                     }}
                   />
                   <span className="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
