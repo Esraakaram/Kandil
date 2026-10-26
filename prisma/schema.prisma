@@ -10,14 +10,14 @@ datasource db {
 model City {
   id        Int      @id @default(autoincrement())
   name      String
-  imageName String?  @db.Text
+  imageName String?  @db.LongText
   areas     Area[]
 }
 
 model Area {
   id        Int       @id @default(autoincrement())
   name      String
-  imageName String?   @db.Text
+  imageName String?   @db.LongText
   cityId    Int
   city      City      @relation(fields: [cityId], references: [id], onDelete: Cascade)
   projects  Project[]
@@ -26,7 +26,7 @@ model Area {
 model Project {
   id                 Int      @id @default(autoincrement())
   name               String
-  imageName          String?  @db.Text
+  imageName          String?  @db.LongText
   areaId             Int?
   area               Area?    @relation(fields: [areaId], references: [id], onDelete: SetNull)
   areaName           String?
@@ -34,14 +34,14 @@ model Project {
   deliveryDate       String?
   aboutProject       String?  @db.Text
   videoURL           String?  @db.Text
-  mainImage          String?  @db.Text
-  locationImage      String?  @db.Text
+  mainImage          String?  @db.LongText
+  locationImage      String?  @db.LongText
   pdfFile            String?  @db.Text
   isFinish           Boolean  @default(false)
-  detailsCoverImage  String?  @db.Text
+  detailsCoverImage  String?  @db.LongText
   locationProjects   String?  @db.Text
   advantageProjects  String?  @db.Text
-  images             String?  @db.Text
+  images             String?  @db.LongText
   units              Unit[]
 }
 
@@ -49,7 +49,7 @@ model Unit {
   id                 Int      @id @default(autoincrement())
   title              String
   description        String?  @db.Text
-  imageName          String?  @db.Text
+  imageName          String?  @db.LongText
   status             String   @default("Available")
   isShown            Boolean  @default(true)
   codeUnit           String?
@@ -65,16 +65,16 @@ model Unit {
   typePrice          String   @default("كاش")
   projectId          Int?
   project            Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  detailsCoverImage  String?  @db.Text
+  detailsCoverImage  String?  @db.LongText
   advantageUnits     String?  @db.Text
   serviceUnits       String?  @db.Text
-  unitImages         String?  @db.Text
+  unitImages         String?  @db.LongText
 }
 
 model Slider {
   id        Int     @id @default(autoincrement())
   mediaType String  @default("image")
-  mediaPath String  @db.Text
+  mediaPath String  @db.LongText
   title     String?
   subtitle  String?
   link      String? @db.Text
@@ -82,7 +82,7 @@ model Slider {
 
 model CoverImage {
   id        Int     @id @default(autoincrement())
-  imageName String  @db.Text
+  imageName String  @db.LongText
   imageType String?
   pageName  String
 }
@@ -100,13 +100,13 @@ model WhyUs {
   description     String  @db.Text
   quote           String? @db.Text
   fullDescription String? @db.Text
-  imageUrl        String? @db.Text
+  imageUrl        String? @db.LongText
 }
 
 model MediaCategory {
   id        Int     @id @default(autoincrement())
   title     String
-  imageName String? @db.Text
+  imageName String? @db.LongText
   media     Media[]
 }
 
@@ -115,7 +115,7 @@ model Media {
   title       String
   description String        @db.Text
   created     String?
-  imageName   String?       @db.Text
+  imageName   String?       @db.LongText
   videoURl    String?       @db.Text
   mediaId     Int
   category    MediaCategory @relation(fields: [mediaId], references: [id], onDelete: Cascade)
@@ -124,7 +124,7 @@ model Media {
 model FinishCategory {
   id          Int     @id @default(autoincrement())
   title       String
-  imageName   String? @db.Text
+  imageName   String? @db.LongText
   description String? @db.Text
   items       String? @db.Text
 }
@@ -134,7 +134,7 @@ model CommercialProject {
   title       String
   areaName    String
   description String  @db.Text
-  imageName   String? @db.Text
+  imageName   String? @db.LongText
   unitsCount  Int     @default(0)
   type        String  @default("تجاري")
   priceStart  Float   @default(0)

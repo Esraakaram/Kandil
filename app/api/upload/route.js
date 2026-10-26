@@ -24,19 +24,23 @@ export async function POST(req) {
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
     let savedToDisk = false;
 
-    try {
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
+    // In Vercel serverless functions, files written to disk are ephemeral and not served by Vercel CDN/static routing.
+    // Therefore, on Vercel we directly use the optimized Base64 Data URL so it is safely stored in the database.
+    const isVercel = !!process.env.VERCEL;
+
+    if (!isVercel) {
+      try {
+        if (!fs.existsSync(uploadsDir)) {
+          fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+        const filePath = path.join(uploadsDir, fileName);
+        await fs.promises.writeFile(filePath, buffer);
+        savedToDisk = true;
+      } catch (fsErr) {
+        console.warn('Filesystem write failed, falling back to data URL:', fsErr.message);
       }
-      const filePath = path.join(uploadsDir, fileName);
-      await fs.promises.writeFile(filePath, buffer);
-      savedToDisk = true;
-    } catch (fsErr) {
-      console.warn('Filesystem write failed (read-only/serverless environment), falling back to data URL:', fsErr.message);
     }
 
-    // If written to disk, return standard /uploads/... path.
-    // If on read-only serverless (e.g. Vercel), return base64 Data URL so it is fully stored and rendered without error!
     const fileUrl = savedToDisk
       ? `/uploads/${fileName}`
       : `data:${file.type || 'image/jpeg'};base64,${buffer.toString('base64')}`;

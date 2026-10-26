@@ -136,25 +136,80 @@ const Pagination = ({ currentPage, totalItems, pageSize = 8, onPageChange }) => 
 // ---------------------------------------------------------------------------
 // Reusable Component: ImageUploader (Upload instead of text link)
 // ---------------------------------------------------------------------------
+// Helper to compress raw photos from phone/PC to ~100-200KB before uploading
+const compressImageClient = (file, maxWidth = 1280, maxHeight = 1280, quality = 0.8) => {
+  return new Promise((resolve) => {
+    if (!file || !file.type.startsWith('image/') || file.type === 'image/svg+xml' || file.type === 'image/gif') {
+      return resolve(file);
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return resolve(file);
+
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return resolve(file);
+            const safeName = (file.name || 'image').replace(/\.[^/.]+$/, '') + '.jpg';
+            const compressedFile = new File([blob], safeName, {
+              type: 'image/jpeg',
+              lastModified: Date.now()
+            });
+            resolve(compressedFile);
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+      img.onerror = () => resolve(file);
+      img.src = e.target.result;
+    };
+    reader.onerror = () => resolve(file);
+    reader.readAsDataURL(file);
+  });
+};
+
 const ImageUploader = ({ label, value, onChange, placeholder = 'اختر صورة من جهازك' }) => {
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
 
   const handleFileChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const rawFile = e.target.files?.[0];
+    if (!rawFile) return;
 
-    // Validate size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      setError('حجم الصورة كبير جداً (الحد الأقصى 10 ميجابايت)');
+    // Validate size (max 20MB raw before client compression)
+    if (rawFile.size > 20 * 1024 * 1024) {
+      setError('حجم الصورة كبير جداً (الحد الأقصى 20 ميجابايت)');
       return;
     }
 
     setError(null);
     setUploading(true);
     try {
-      const res = await api.uploadImage(file);
+      // Auto compress on client: turns 5-15MB phone photos into crisp ~120KB web images
+      const fileToUpload = await compressImageClient(rawFile);
+      const res = await api.uploadImage(fileToUpload);
       if (res && res.url) {
         onChange(res.url);
       } else {
@@ -165,6 +220,9 @@ const ImageUploader = ({ label, value, onChange, placeholder = 'اختر صور�
       setError(err?.message || 'حدث خطأ أثناء رفع الصورة');
     } finally {
       setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -481,6 +539,10 @@ export const Dashboard = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || errData.message || 'فشل تحديث بيانات الوحدة');
+        }
         const updated = await res.json();
         setUnits((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
         showToast('تم تحديث بيانات الوحدة بنجاح');
@@ -490,6 +552,10 @@ export const Dashboard = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || errData.message || 'فشل إضافة الوحدة');
+        }
         const created = await res.json();
         setUnits((prev) => [created, ...prev]);
         showToast('تمت إضافة الوحدة الجديدة بنجاح');
@@ -497,7 +563,7 @@ export const Dashboard = () => {
       setEditingUnit(null);
     } catch (err) {
       console.error(err);
-      showToast('حدث خطأ أثناء حفظ الوحدة');
+      showToast(err.message || 'حدث خطأ أثناء حفظ الوحدة');
     }
   };
 
@@ -549,13 +615,18 @@ export const Dashboard = () => {
     if (!editingProject) return;
     try {
       if (editingProject.id) {
-        await fetch(`/api/admin/projects/${editingProject.id}`, {
+        const res = await fetch(`/api/admin/projects/${editingProject.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(editingProject)
         });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || errData.message || 'فشل تحديث المشروع');
+        }
+        const updated = await res.json();
         setProjects((prev) =>
-          prev.map((p) => (p.id === editingProject.id ? { ...p, ...editingProject } : p))
+          prev.map((p) => (p.id === editingProject.id ? { ...p, ...updated } : p))
         );
         showToast('تم تحديث المشروع بنجاح');
       } else {
@@ -564,6 +635,10 @@ export const Dashboard = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(editingProject)
         });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || errData.message || 'فشل إضافة المشروع');
+        }
         const created = await res.json();
         setProjects((prev) => [created, ...prev]);
         showToast('تمت إضافة المشروع الجديد بنجاح');
@@ -571,7 +646,7 @@ export const Dashboard = () => {
       setEditingProject(null);
     } catch (err) {
       console.error(err);
-      showToast('حدث خطأ أثناء حفظ المشروع');
+      showToast(err.message || 'حدث خطأ أثناء حفظ المشروع');
     }
   };
 
@@ -634,6 +709,10 @@ export const Dashboard = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(editingCity)
         });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || errData.message || 'فشل تحديث بيانات المدينة');
+        }
         const updated = await res.json();
         setCities((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
         showToast('تم تحديث بيانات المدينة بنجاح');
@@ -643,6 +722,10 @@ export const Dashboard = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(editingCity)
         });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || errData.message || 'فشل إضافة المدينة');
+        }
         const created = await res.json();
         setCities((prev) => [...prev, created]);
         showToast('تمت إضافة المدينة الجديدة بنجاح');
@@ -650,7 +733,7 @@ export const Dashboard = () => {
       setEditingCity(null);
     } catch (err) {
       console.error(err);
-      showToast('حدث خطأ أثناء حفظ المدينة');
+      showToast(err.message || 'حدث خطأ أثناء حفظ المدينة');
     }
   };
 
@@ -678,6 +761,10 @@ export const Dashboard = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(editingArea)
         });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || errData.message || 'فشل تحديث بيانات المنطقة');
+        }
         const updated = await res.json();
         setAreas((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
         showToast('تم تحديث بيانات المنطقة بنجاح');
@@ -687,6 +774,10 @@ export const Dashboard = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(editingArea)
         });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || errData.message || 'فشل إضافة المنطقة');
+        }
         const created = await res.json();
         setAreas((prev) => [...prev, created]);
         showToast('تمت إضافة المنطقة الجديدة بنجاح');
@@ -694,7 +785,7 @@ export const Dashboard = () => {
       setEditingArea(null);
     } catch (err) {
       console.error(err);
-      showToast('حدث خطأ أثناء حفظ المنطقة');
+      showToast(err.message || 'حدث خطأ أثناء حفظ المنطقة');
     }
   };
 
@@ -721,6 +812,10 @@ export const Dashboard = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(editingFinishCat)
         });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || errData.message || 'فشل تحديث باقة التشطيب');
+        }
         const updated = await res.json();
         setFinishCategories((prev) => prev.map((f) => (f.id === updated.id ? updated : f)));
         showToast('تم تحديث باقة التشطيب بنجاح');
@@ -730,6 +825,10 @@ export const Dashboard = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(editingFinishCat)
         });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || errData.message || 'فشل إضافة باقة التشطيب');
+        }
         const created = await res.json();
         setFinishCategories((prev) => [...prev, created]);
         showToast('تمت إضافة باقة التشطيب بنجاح');
@@ -737,7 +836,7 @@ export const Dashboard = () => {
       setEditingFinishCat(null);
     } catch (err) {
       console.error(err);
-      showToast('حدث خطأ أثناء حفظ باقة التشطيب');
+      showToast(err.message || 'حدث خطأ أثناء حفظ باقة التشطيب');
     }
   };
 
