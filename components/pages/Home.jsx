@@ -22,11 +22,16 @@ import {
 import { api, getImageUrl } from '@/services/api';
 
 
+const DEFAULT_SLIDERS = [
+  { id: 'def-1', mediaPath: '/assets/Images/sliders/e47551a2-8091-439c-aca7-e32ca4629129.png' },
+  { id: 'def-2', mediaPath: '/assets/Images/sliders/39cecd18-7c18-4f0c-8a2e-f23f0f993896.png' }
+];
+
 export const Home = () => {
   const navigate = useNavigate();
 
   // State
-  const [sliders, setSliders] = useState([]);
+  const [sliders, setSliders] = useState(DEFAULT_SLIDERS);
   const [activeSlide, setActiveSlide] = useState(0);
   const [citiesData, setCitiesData] = useState([]);
   const [projectsWithArea, setProjectsWithArea] = useState([]);
@@ -42,8 +47,17 @@ export const Home = () => {
   const [selectedProjectId, setSelectedProjectId] = useState('');
 
   useEffect(() => {
+    // 1. Fetch sliders independently for fast instant hero render
+    api.getSliders()
+      .then((slidersRes) => {
+        if (Array.isArray(slidersRes) && slidersRes.length > 0) {
+          setSliders(slidersRes);
+        }
+      })
+      .catch((err) => console.error('Error fetching sliders:', err));
+
+    // 2. Fetch the rest of the page data in parallel
     Promise.all([
-      api.getSliders(),
       api.getCitiesWithArea(),
       api.getProjectsWithArea(),
       api.getFeaturedUnits(),
@@ -51,8 +65,7 @@ export const Home = () => {
       api.getMedia(),
       api.getLandingPage().catch(() => null)
     ])
-      .then(([slidersRes, citiesRes, projectsRes, unitsRes, whyUsRes, mediaRes, lpRes]) => {
-        setSliders(slidersRes);
+      .then(([citiesRes, projectsRes, unitsRes, whyUsRes, mediaRes, lpRes]) => {
         setCitiesData(citiesRes);
         setProjectsWithArea(projectsRes);
         setFeaturedUnits(unitsRes);
@@ -104,6 +117,8 @@ export const Home = () => {
               <img
                 src={getImageUrl(slide.mediaPath, 'slider')}
                 alt="Kandil Hero"
+                loading={idx === 0 ? "eager" : "lazy"}
+                fetchPriority={idx === 0 ? "high" : "auto"}
                 className="w-full h-full object-cover object-center"
                 onError={(e) => {
                   e.target.src = '/assets/Images/sliders/e47551a2-8091-439c-aca7-e32ca4629129.png';

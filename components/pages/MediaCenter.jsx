@@ -12,6 +12,7 @@ export const MediaCenter = () => {
   const [categories, setCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState(mediaId ? Number(mediaId) : 0);
   const [articles, setArticles] = useState([]);
+  const [coverImage, setCoverImage] = useState('');
   const [loading, setLoading] = useState(true);
 
   // Sync activeCategory if mediaId in URL changes
@@ -25,11 +26,18 @@ export const MediaCenter = () => {
     setLoading(true);
     Promise.all([
       api.getMediaCategories(),
-      api.getMedia(activeCategory > 0 ? activeCategory : undefined)
+      api.getMedia(activeCategory > 0 ? activeCategory : undefined),
+      api.getCoverImages()
     ])
-      .then(([catsRes, mediaRes]) => {
+      .then(([catsRes, mediaRes, coversRes]) => {
         setCategories(catsRes);
         setArticles(mediaRes || []);
+        if (Array.isArray(coversRes)) {
+          const cover = coversRes.find((c) => c.pageName && (c.pageName.includes('اعلام') || c.pageName.includes('إعلام')));
+          if (cover && cover.imageName) {
+            setCoverImage(getImageUrl(cover.imageName));
+          }
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -41,8 +49,19 @@ export const MediaCenter = () => {
   return (
     <div className="space-y-12 pb-16">
       {/* Header Banner */}
-      <div className="bg-[#26070a] text-white py-14">
-        <div className="max-w-7xl mx-auto px-4">
+      <div className="relative min-h-[220px] md:h-72 bg-[#26070a] text-white overflow-hidden flex items-center">
+        {coverImage && (
+          <img
+            src={coverImage}
+            alt="المركز الإعلامي"
+            className="absolute inset-0 w-full h-full object-cover filter brightness-50"
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 w-full py-10">
           <span className="text-[#f59e0b] font-bold text-xs uppercase tracking-wider block mb-2">
             متابعة حية للتطورات العمرانية
           </span>

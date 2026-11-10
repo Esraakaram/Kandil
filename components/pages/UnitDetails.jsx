@@ -491,10 +491,12 @@ export const UnitDetails = () => {
                     <input
                       type="tel"
                       required
+                      inputMode="tel"
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => setPhone(e.target.value.replace(/[^0-9+]/g, ''))}
                       placeholder="01xxxxxxxxx"
                       className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-gray-800 focus:outline-none focus:border-[#d61c23]"
+                      dir="ltr"
                     />
                   </div>
 

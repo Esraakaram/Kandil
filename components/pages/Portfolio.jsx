@@ -29,6 +29,7 @@ export const Portfolio = () => {
   const [expandedProjects, setExpandedProjects] = useState({});
   const [selectedArea, setSelectedArea] = useState('ALL');
   const [currentPage, setCurrentPage] = useState(1);
+  const [coverImage, setCoverImage] = useState('');
   const [loading, setLoading] = useState(true);
 
   const PROJECTS_PER_PAGE = 6;
@@ -37,11 +38,19 @@ export const Portfolio = () => {
   useEffect(() => {
     Promise.all([
       api.getPortfolioProjects(),
-      api.getAllUnits()
+      api.getAllUnits(),
+      api.getCoverImages()
     ])
-      .then(([portfolioRes, unitsRes]) => {
+      .then(([portfolioRes, unitsRes, coversRes]) => {
         const projects = Array.isArray(portfolioRes) ? portfolioRes : [];
         setPortfolioProjects(projects);
+
+        if (Array.isArray(coversRes)) {
+          const cover = coversRes.find((c) => c.pageName && c.pageName.includes('سابقة'));
+          if (cover && cover.imageName) {
+            setCoverImage(getImageUrl(cover.imageName));
+          }
+        }
 
         // Auto-expand the first 2 projects so units are visible right away
         const initialExpanded = {};
@@ -200,8 +209,19 @@ export const Portfolio = () => {
   return (
     <div className="space-y-16 pb-20 bg-gray-50/50">
       {/* 1. Hero Banner */}
-      <div className="bg-[#26070a] text-white py-14 md:py-20 border-b border-[#3d0d12]">
-        <div className="max-w-7xl mx-auto px-4">
+      <div className="relative min-h-[260px] md:h-80 bg-[#26070a] text-white overflow-hidden flex items-center border-b border-[#3d0d12]">
+        {coverImage && (
+          <img
+            src={coverImage}
+            alt="سابقة الأعمال والتسليمات"
+            className="absolute inset-0 w-full h-full object-cover filter brightness-50"
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent"></div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 w-full py-12 md:py-16">
           <div className="max-w-3xl space-y-4">
             <span className="inline-flex items-center gap-2 bg-[#d61c23]/20 border border-[#d61c23]/40 text-[#f59e0b] px-4 py-1.5 rounded-full font-bold text-xs">
               <Sparkles className="w-4 h-4" />

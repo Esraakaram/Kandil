@@ -400,15 +400,36 @@ export const Dashboard = () => {
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Auth check & load data
+  // Auth check with 1-hour session timeout & load data
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('kandil_admin_token') : null;
-    if (!token) {
-      navigate('/dashboard/login');
-      return;
-    }
+    const checkSession = () => {
+      const ONE_HOUR = 60 * 60 * 1000;
+      const token = typeof window !== 'undefined' ? localStorage.getItem('kandil_admin_token') : null;
+      const loginTime = typeof window !== 'undefined' ? Number(localStorage.getItem('kandil_admin_login_time') || 0) : 0;
+      const isExpired = !loginTime || (Date.now() - loginTime > ONE_HOUR);
+
+      if (!token || isExpired) {
+        localStorage.removeItem('kandil_admin_token');
+        localStorage.removeItem('kandil_admin_user');
+        localStorage.removeItem('kandil_admin_login_time');
+        setIsAuthenticated(false);
+        navigate('/dashboard/login');
+        return false;
+      }
+      return true;
+    };
+
+    if (!checkSession()) return;
+
     setIsAuthenticated(true);
     loadAllData();
+
+    // Check session validity periodically (auto-logout after 1 hour)
+    const sessionTimer = setInterval(() => {
+      checkSession();
+    }, 60000);
+
+    return () => clearInterval(sessionTimer);
   }, []);
 
   const loadAllData = async () => {
@@ -487,6 +508,7 @@ export const Dashboard = () => {
   const handleLogout = () => {
     localStorage.removeItem('kandil_admin_token');
     localStorage.removeItem('kandil_admin_user');
+    localStorage.removeItem('kandil_admin_login_time');
     navigate('/dashboard/login');
   };
 
@@ -938,13 +960,17 @@ export const Dashboard = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editingCover)
       });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || errData.message || 'فشل تحديث كفر الصفحة');
+      }
       const updated = await res.json();
       setCoverImages((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
       showToast('تم تحديث كفر الصفحة بنجاح');
       setEditingCover(null);
     } catch (err) {
       console.error(err);
-      showToast('حدث خطأ أثناء تحديث كفر الصفحة');
+      showToast(err.message || 'حدث خطأ أثناء تحديث كفر الصفحة');
     }
   };
 
@@ -1152,25 +1178,29 @@ export const Dashboard = () => {
     e.preventDefault();
     try {
       const linksPayload = [
-        { id: 1, type: 0, url: companySettings.facebook, name: 'Facebook' },
-        { id: 2, type: 2, url: companySettings.linkedin, name: 'LinkedIn' },
-        { id: 3, type: 3, url: companySettings.instagram, name: 'Instagram' },
-        { id: 4, type: 4, url: companySettings.whatsapp, name: 'WhatsApp' },
-        { id: 5, type: 5, url: companySettings.youtube, name: 'YouTube' },
-        { id: 6, type: 6, url: companySettings.hotline, name: 'Phone' },
-        { id: 7, type: 7, url: companySettings.address, name: 'Address' },
-        { id: 8, type: 8, url: companySettings.email, name: 'Email' }
+        { type: 0, url: companySettings.facebook || '', name: 'Facebook' },
+        { type: 2, url: companySettings.linkedin || '', name: 'LinkedIn' },
+        { type: 3, url: companySettings.instagram || '', name: 'Instagram' },
+        { type: 4, url: companySettings.whatsapp || '', name: 'WhatsApp' },
+        { type: 5, url: companySettings.youtube || '', name: 'YouTube' },
+        { type: 6, url: companySettings.hotline || '', name: 'Phone' },
+        { type: 7, url: companySettings.address || '', name: 'Address' },
+        { type: 8, url: companySettings.email || '', name: 'Email' }
       ];
 
-      await fetch('/api/admin/sociallinks', {
+      const res = await fetch('/api/admin/sociallinks', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(linksPayload)
       });
-      showToast('تم حفظ إعدادات الشركة بنجاح');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'فشل حفظ الإعدادات');
+      }
+      showToast('تم حفظ إعدادات الشركة وبيانات الاتصال بنجاح');
     } catch (err) {
       console.error(err);
-      showToast('حدث خطأ أثناء حفظ الإعدادات');
+      showToast(err.message || 'حدث خطأ أثناء حفظ الإعدادات');
     }
   };
 
@@ -3960,6 +3990,9 @@ export const Dashboard = () => {
                             src={getImageUrl(cov.imageName)}
                             alt={cov.pageName}
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.target.src = '/assets/Images/whyus/whyus-philosophy.jpg';
+                            }}
                           />
                           <div className="absolute top-3 right-3 bg-slate-900/90 backdrop-blur text-white px-3 py-1 rounded-full text-xs font-bold">
                             {cov.pageName}

@@ -11,11 +11,43 @@ export const Footer = () => {
   const [citiesData, setCitiesData] = useState([]);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [socialData, setSocialData] = useState({
+    hotline: '19473',
+    address: '٢١ مكرم عبيد - مدينة نصر - القاهرة',
+    email: 'info@kandil-realestate.com',
+    facebook: 'https://www.facebook.com/kandilrealestateinvestment',
+    instagram: 'https://www.instagram.com/kandil.realestate/',
+    youtube: 'https://www.youtube.com/c/KandilRealEstate',
+    whatsapp: '201010099116'
+  });
 
   useEffect(() => {
     api.getCitiesWithArea()
       .then((data) => setCitiesData(data))
       .catch((err) => console.error('Error fetching footer data:', err));
+
+    api.getSocialLinks()
+      .then((res) => {
+        if (res && res.socialLinks && Array.isArray(res.socialLinks)) {
+          const phone = res.socialLinks.find((l) => l.type === 6)?.url;
+          const addr = res.socialLinks.find((l) => l.type === 7)?.url;
+          const mail = res.socialLinks.find((l) => l.type === 8)?.url;
+          const fb = res.socialLinks.find((l) => l.type === 0)?.url;
+          const ig = res.socialLinks.find((l) => l.type === 3)?.url;
+          const yt = res.socialLinks.find((l) => l.type === 5)?.url;
+          const wa = res.socialLinks.find((l) => l.type === 4)?.url;
+          setSocialData((prev) => ({
+            hotline: phone || prev.hotline,
+            address: addr || prev.address,
+            email: mail || prev.email,
+            facebook: fb || prev.facebook,
+            instagram: ig || prev.instagram,
+            youtube: yt || prev.youtube,
+            whatsapp: wa || prev.whatsapp
+          }));
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const handleSubscribe = (e) => {
@@ -77,22 +109,22 @@ export const Footer = () => {
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-3 text-gray-300">
                 <MapPin className="w-5 h-5 text-[#ea0600] shrink-0 mt-0.5" />
-                <span>٢١ مكرم عبيد - مدينة نصر - القاهرة</span>
+                <span>{socialData.address}</span>
               </li>
               <li className="flex items-center gap-3 text-gray-300">
                 <Phone className="w-5 h-5 text-[#f59e0b] shrink-0" />
-                <a href="tel:19473" className="hover:text-white font-mono text-base font-bold">19473</a>
+                <a href={`tel:${socialData.hotline}`} className="hover:text-white font-mono text-base font-bold">{socialData.hotline}</a>
               </li>
               <li className="flex items-center gap-3 text-gray-300">
                 <Mail className="w-5 h-5 text-[#ea0600] shrink-0" />
-                <a href="mailto:info@kandil-realestate.com" className="hover:text-white">info@kandil-realestate.com</a>
+                <a href={`mailto:${socialData.email}`} className="hover:text-white">{socialData.email}</a>
               </li>
             </ul>
 
             {/* Social Icons */}
             <div className="flex items-center gap-3 pt-2">
               <a
-                href="https://www.facebook.com/kandilrealestateinvestment"
+                href={socialData.facebook}
                 target="_blank"
                 rel="noreferrer"
                 className="w-9 h-9 rounded-full bg-white/10 hover:bg-[#1877f2] hover:text-white flex items-center justify-center transition-colors"
@@ -101,7 +133,7 @@ export const Footer = () => {
                 <i className="fa-brands fa-facebook-f text-sm"></i>
               </a>
               <a
-                href="https://www.instagram.com/kandil.realestate/"
+                href={socialData.instagram}
                 target="_blank"
                 rel="noreferrer"
                 className="w-9 h-9 rounded-full bg-white/10 hover:bg-[#e4405f] hover:text-white flex items-center justify-center transition-colors"
@@ -110,7 +142,7 @@ export const Footer = () => {
                 <i className="fa-brands fa-instagram text-sm"></i>
               </a>
               <a
-                href="https://wa.me/201010099116"
+                href={`https://wa.me/${socialData.whatsapp.replace(/[^0-9]/g, '')}`}
                 target="_blank"
                 rel="noreferrer"
                 className="w-9 h-9 rounded-full bg-white/10 hover:bg-[#25d366] hover:text-white flex items-center justify-center transition-colors"
@@ -119,7 +151,7 @@ export const Footer = () => {
                 <i className="fa-brands fa-whatsapp text-sm"></i>
               </a>
               <a
-                href="https://www.youtube.com/c/KandilRealEstate"
+                href={socialData.youtube}
                 target="_blank"
                 rel="noreferrer"
                 className="w-9 h-9 rounded-full bg-white/10 hover:bg-[#ff0000] hover:text-white flex items-center justify-center transition-colors"

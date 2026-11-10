@@ -21,6 +21,7 @@ export const DashboardLogin = () => {
       const res = await api.login(username, password);
       localStorage.setItem('kandil_admin_token', res.token);
       localStorage.setItem('kandil_admin_user', JSON.stringify(res.user || { username, role: 'SuperAdmin' }));
+      localStorage.setItem('kandil_admin_login_time', String(Date.now()));
       navigate('/dashboard');
     } catch (err) {
       setError(err.message || 'بيانات الدخول غير صحيحة');

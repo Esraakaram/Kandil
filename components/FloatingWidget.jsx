@@ -1,10 +1,36 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Phone, MessageCircle, X } from 'lucide-react';
+import { api } from '@/services/api';
 
 export const FloatingWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [socialData, setSocialData] = useState({
+    hotline: '19473',
+    whatsapp: '201010099116',
+    facebook: 'https://www.facebook.com/kandilrealestateinvestment',
+    instagram: 'https://www.instagram.com/kandil.realestate/'
+  });
+
+  useEffect(() => {
+    api.getSocialLinks()
+      .then((res) => {
+        if (res && res.socialLinks && Array.isArray(res.socialLinks)) {
+          const phone = res.socialLinks.find((l) => l.type === 6)?.url;
+          const wa = res.socialLinks.find((l) => l.type === 4)?.url;
+          const fb = res.socialLinks.find((l) => l.type === 0)?.url;
+          const ig = res.socialLinks.find((l) => l.type === 3)?.url;
+          setSocialData((prev) => ({
+            hotline: phone || prev.hotline,
+            whatsapp: wa || prev.whatsapp,
+            facebook: fb || prev.facebook,
+            instagram: ig || prev.instagram
+          }));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
@@ -13,11 +39,11 @@ export const FloatingWidget = () => {
         <div className="mb-3 flex flex-col gap-2.5 items-end animate-in fade-in slide-in-from-bottom-3 duration-200">
           {/* Hotline Call */}
           <a
-            href="tel:19473"
+            href={`tel:${socialData.hotline}`}
             className="flex items-center gap-2.5 bg-white text-gray-800 px-3.5 py-2 rounded-full shadow-lg border border-gray-100 hover:bg-[#d61c23] hover:text-white transition-all group"
             title="اتصل بالخط الساخن"
           >
-            <span className="text-xs font-bold font-mono">19473</span>
+            <span className="text-xs font-bold font-mono">{socialData.hotline}</span>
             <div className="w-8 h-8 rounded-full bg-[#d61c23] text-white flex items-center justify-center group-hover:bg-white group-hover:text-[#d61c23] transition-colors">
               <Phone className="w-4 h-4 text-[#f59e0b]" />
             </div>
@@ -25,7 +51,7 @@ export const FloatingWidget = () => {
 
           {/* WhatsApp */}
           <a
-            href="https://wa.me/201010099116"
+            href={`https://wa.me/${socialData.whatsapp.replace(/[^0-9]/g, '')}`}
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-2.5 bg-white text-gray-800 px-3.5 py-2 rounded-full shadow-lg border border-gray-100 hover:bg-[#25d366] hover:text-white transition-all group"
@@ -39,7 +65,7 @@ export const FloatingWidget = () => {
 
           {/* Facebook Messenger */}
           <a
-            href="https://www.facebook.com/kandilrealestateinvestment"
+            href={socialData.facebook}
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-2.5 bg-white text-gray-800 px-3.5 py-2 rounded-full shadow-lg border border-gray-100 hover:bg-[#1877f2] hover:text-white transition-all group"
@@ -53,7 +79,7 @@ export const FloatingWidget = () => {
 
           {/* Instagram */}
           <a
-            href="https://www.instagram.com/kandil.realestate/"
+            href={socialData.instagram}
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-2.5 bg-white text-gray-800 px-3.5 py-2 rounded-full shadow-lg border border-gray-100 hover:bg-[#e4405f] hover:text-white transition-all group"

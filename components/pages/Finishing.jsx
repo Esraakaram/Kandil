@@ -1,14 +1,13 @@
 'use client';
 
  function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }import React, { useState, useEffect } from 'react';
-
-import { CheckCircle, Send, } from 'lucide-react';
-import { api } from '@/services/api';
-
+import { CheckCircle, Send } from 'lucide-react';
+import { api, getImageUrl } from '@/services/api';
 
 export const Finishing = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [coverImage, setCoverImage] = useState('');
   const [loading, setLoading] = useState(true);
 
   // Consultation Form
@@ -20,10 +19,16 @@ export const Finishing = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    api.getFinishCategories()
-      .then((data) => {
-        setCategories(data);
-        if (data.length > 0) setSelectedCategory(data[0]);
+    Promise.all([api.getFinishCategories(), api.getCoverImages()])
+      .then(([catsRes, coversRes]) => {
+        setCategories(catsRes);
+        if (catsRes.length > 0) setSelectedCategory(catsRes[0]);
+        if (Array.isArray(coversRes)) {
+          const cover = coversRes.find((c) => c.pageName && (c.pageName.includes('تشطيب') || c.pageName.includes('تشطبي')));
+          if (cover && cover.imageName) {
+            setCoverImage(getImageUrl(cover.imageName));
+          }
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -58,8 +63,19 @@ export const Finishing = () => {
   return (
     <div className="space-y-16 pb-20">
       {/* Header Banner */}
-      <div className="bg-[#26070a] text-white py-14">
-        <div className="max-w-7xl mx-auto px-4">
+      <div className="relative min-h-[220px] md:h-72 bg-[#26070a] text-white overflow-hidden flex items-center">
+        {coverImage && (
+          <img
+            src={coverImage}
+            alt="خدمات التشطيب والديكور"
+            className="absolute inset-0 w-full h-full object-cover filter brightness-50"
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 w-full py-10">
           <span className="text-[#f59e0b] font-bold text-xs uppercase tracking-wider block mb-2">
             باقات تشطيب فندقية بمعايير عالمية
           </span>
@@ -174,10 +190,12 @@ export const Finishing = () => {
                   <input
                     type="tel"
                     required
+                    inputMode="tel"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9+]/g, ''))}
                     placeholder="01xxxxxxxxx"
                     className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-xs text-gray-800 focus:outline-none focus:border-[#d61c23]"
+                    dir="ltr"
                   />
                 </div>
               </div>

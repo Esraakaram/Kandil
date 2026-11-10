@@ -3,17 +3,23 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from '@/lib/navigation';
 import { Building2, Phone, MapPin, CheckCircle } from 'lucide-react';
-import { api } from '@/services/api';
-
+import { api, getImageUrl } from '@/services/api';
 
 export const CommercialProjects = () => {
   const [projects, setProjects] = useState([]);
+  const [coverImage, setCoverImage] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.getCommercialProjects()
-      .then((data) => {
+    Promise.all([api.getCommercialProjects(), api.getCoverImages()])
+      .then(([data, coversRes]) => {
         setProjects(data);
+        if (Array.isArray(coversRes)) {
+          const cover = coversRes.find((c) => c.pageName && (c.pageName.includes('تجاري') || c.pageName.includes('مشروعات')));
+          if (cover && cover.imageName) {
+            setCoverImage(getImageUrl(cover.imageName));
+          }
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -25,8 +31,19 @@ export const CommercialProjects = () => {
   return (
     <div className="space-y-12 pb-16">
       {/* Header Banner */}
-      <div className="bg-[#26070a] text-white py-14">
-        <div className="max-w-7xl mx-auto px-4">
+      <div className="relative min-h-[220px] md:h-72 bg-[#26070a] text-white overflow-hidden flex items-center">
+        {coverImage && (
+          <img
+            src={coverImage}
+            alt="المشروعات التجارية والخدمية"
+            className="absolute inset-0 w-full h-full object-cover filter brightness-50"
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 w-full py-10">
           <span className="text-[#f59e0b] font-bold text-xs uppercase tracking-wider block mb-2">
             استثمار تجاري وإداري وطبي بعوائد مجزية
           </span>

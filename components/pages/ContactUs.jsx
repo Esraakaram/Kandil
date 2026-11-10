@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle2 } from 'lucide-react';
-import { api } from '@/services/api';
+import { api, getImageUrl } from '@/services/api';
 
 export const ContactUs = () => {
   const [name, setName] = useState('');
@@ -10,10 +10,43 @@ export const ContactUs = () => {
   const [email, setEmail] = useState('');
   const [project, setProject] = useState('مشروع عام');
   const [message, setMessage] = useState('');
+  const [coverImage, setCoverImage] = useState('');
 
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  const [socialData, setSocialData] = useState({
+    hotline: '19473',
+    whatsapp: '201010099116',
+    address: '٢١ مكرم عبيد - مدينة نصر - القاهرة - جمهورية مصر العربية',
+    email: 'info@kandil-realestate.com'
+  });
+
+  useEffect(() => {
+    Promise.all([api.getCoverImages(), api.getSocialLinks()])
+      .then(([coversRes, socRes]) => {
+        if (Array.isArray(coversRes)) {
+          const cover = coversRes.find((c) => c.pageName && c.pageName.includes('اتصل'));
+          if (cover && cover.imageName) {
+            setCoverImage(getImageUrl(cover.imageName));
+          }
+        }
+        if (socRes && socRes.socialLinks && Array.isArray(socRes.socialLinks)) {
+          const phoneLink = socRes.socialLinks.find((l) => l.type === 6)?.url;
+          const waLink = socRes.socialLinks.find((l) => l.type === 4)?.url;
+          const addrLink = socRes.socialLinks.find((l) => l.type === 7)?.url;
+          const mailLink = socRes.socialLinks.find((l) => l.type === 8)?.url;
+          setSocialData((prev) => ({
+            hotline: phoneLink || prev.hotline,
+            whatsapp: waLink || prev.whatsapp,
+            address: addrLink || prev.address,
+            email: mailLink || prev.email
+          }));
+        }
+      })
+      .catch((err) => console.error('Error loading contact info:', err));
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -51,8 +84,19 @@ export const ContactUs = () => {
   return (
     <div className="space-y-16 pb-20">
       {/* Header Banner */}
-      <div className="bg-[#26070a] text-white py-14">
-        <div className="max-w-7xl mx-auto px-4">
+      <div className="relative h-60 md:h-72 bg-[#26070a] text-white overflow-hidden flex items-center">
+        {coverImage && (
+          <img
+            src={coverImage}
+            alt="اتصل بنا"
+            className="absolute inset-0 w-full h-full object-cover filter brightness-50"
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 w-full">
           <span className="text-[#f59e0b] font-bold text-xs uppercase tracking-wider block mb-2">
             يسعدنا تواصلكم دائماً
           </span>
@@ -60,7 +104,7 @@ export const ContactUs = () => {
             اتصل بنا
           </h1>
           <p className="text-gray-300 text-sm max-w-xl">
-            فريق مبيعات وخدمة عملاء قنديل على أتم استعداد للإجابة عن كافة استفساراتكم وتقديم المشورة العقارية المتخصصة.
+            فريق استشاري قنديل جاهز للرد على استفساراتكم وحجز المعاينات لمشروعاتنا في القاهرة الجديدة.
           </p>
         </div>
       </div>
@@ -78,7 +122,7 @@ export const ContactUs = () => {
               <div>
                 <h3 className="font-bold text-base text-gray-900 mb-1">المقر الرئيسي</h3>
                 <p className="text-gray-600 text-xs leading-relaxed">
-                  ٢١ مكرم عبيد - مدينة نصر - القاهرة - جمهورية مصر العربية
+                  {socialData.address}
                 </p>
               </div>
             </div>
@@ -90,8 +134,8 @@ export const ContactUs = () => {
               </div>
               <div>
                 <h3 className="font-bold text-base text-gray-900 mb-1">الخط الساخن المباشر</h3>
-                <a href="tel:19473" className="font-mono text-xl font-black text-[#d61c23] hover:underline block">
-                  19473
+                <a href={`tel:${socialData.hotline}`} className="font-mono text-xl font-black text-[#d61c23] hover:underline block" title="اتصل بالخط الساخن">
+                  {socialData.hotline}
                 </a>
                 <span className="text-[11px] text-gray-400">سعر المكالمة العادية</span>
               </div>
@@ -105,12 +149,13 @@ export const ContactUs = () => {
               <div>
                 <h3 className="font-bold text-base text-gray-900 mb-1">واتساب المبيعات</h3>
                 <a
-                  href="https://wa.me/201010099116"
+                  href={`https://wa.me/${socialData.whatsapp.replace(/[^0-9]/g, '')}`}
                   target="_blank"
                   rel="noreferrer"
                   className="font-mono text-sm font-bold text-gray-800 hover:text-[#25d366] block"
+                  dir="ltr"
                 >
-                  +20 101 009 9116
+                  <span dir="ltr" className="inline-block">{socialData.whatsapp.startsWith('+') ? socialData.whatsapp : `+${socialData.whatsapp}`}</span>
                 </a>
                 <span className="text-[11px] text-gray-400">رد فوري على مدار الساعة</span>
               </div>
@@ -123,8 +168,8 @@ export const ContactUs = () => {
               </div>
               <div>
                 <h3 className="font-bold text-base text-gray-900 mb-1">البريد الإلكتروني</h3>
-                <a href="mailto:info@kandil-realestate.com" className="text-xs font-semibold text-gray-700 hover:text-[#d61c23] block">
-                  info@kandil-realestate.com
+                <a href={`mailto:${socialData.email}`} className="text-xs font-semibold text-gray-700 hover:text-[#d61c23] block">
+                  {socialData.email}
                 </a>
               </div>
             </div>
@@ -191,10 +236,12 @@ export const ContactUs = () => {
                       <input
                         type="tel"
                         required
+                        inputMode="tel"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={(e) => setPhone(e.target.value.replace(/[^0-9+]/g, ''))}
                         placeholder="01xxxxxxxxx (11 رقم)"
                         className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs text-gray-800 focus:outline-none focus:border-[#d61c23]"
+                        dir="ltr"
                       />
                     </div>
                   </div>

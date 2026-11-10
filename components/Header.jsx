@@ -14,6 +14,15 @@ export const Header = () => {
   const [citiesData, setCitiesData] = useState([]);
   const location = useLocation();
 
+  const [socialData, setSocialData] = useState({
+    hotline: '19473',
+    address: '٢١ مكرم عبيد - مدينة نصر - القاهرة',
+    facebook: 'https://www.facebook.com/kandilrealestateinvestment',
+    instagram: 'https://www.instagram.com/kandil.realestate/',
+    youtube: 'https://www.youtube.com/c/KandilRealEstate',
+    whatsapp: '201010099116'
+  });
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -26,6 +35,27 @@ export const Header = () => {
     api.getCitiesWithArea()
       .then((data) => setCitiesData(data))
       .catch((err) => console.error('Error fetching header areas:', err));
+
+    api.getSocialLinks()
+      .then((res) => {
+        if (res && res.socialLinks && Array.isArray(res.socialLinks)) {
+          const phone = res.socialLinks.find((l) => l.type === 6)?.url;
+          const addr = res.socialLinks.find((l) => l.type === 7)?.url;
+          const fb = res.socialLinks.find((l) => l.type === 0)?.url;
+          const ig = res.socialLinks.find((l) => l.type === 3)?.url;
+          const yt = res.socialLinks.find((l) => l.type === 5)?.url;
+          const wa = res.socialLinks.find((l) => l.type === 4)?.url;
+          setSocialData((prev) => ({
+            hotline: phone || prev.hotline,
+            address: addr || prev.address,
+            facebook: fb || prev.facebook,
+            instagram: ig || prev.instagram,
+            youtube: yt || prev.youtube,
+            whatsapp: wa || prev.whatsapp
+          }));
+        }
+      })
+      .catch(() => {});
   }, []);
 
   // Close mobile drawer on route change
@@ -50,22 +80,29 @@ export const Header = () => {
           <div className="flex items-center gap-6">
             <span className="flex items-center gap-1.5 text-white/90">
               <MapPin className="w-3.5 h-3.5 text-[#ea0600]" />
-              ٢١ مكرم عبيد - مدينة نصر - القاهرة
+              {socialData.address}
             </span>
             <span className="text-white/60">|</span>
-            <span className="text-white/80">الخط الساخن: <strong className="text-[#f59e0b] font-bold">19473</strong></span>
+            <a
+              href={`tel:${socialData.hotline}`}
+              className="text-white/80 hover:text-white transition-colors inline-flex items-center gap-1"
+              title="اتصل بالخط الساخن"
+            >
+              <span>الخط الساخن:</span>
+              <strong className="text-[#f59e0b] font-bold">{socialData.hotline}</strong>
+            </a>
           </div>
           <div className="flex items-center gap-4">
-            <a href="https://www.facebook.com/kandilrealestateinvestment" target="_blank" rel="noreferrer" className="hover:text-[#ea0600] transition-colors" title="Facebook">
+            <a href={socialData.facebook} target="_blank" rel="noreferrer" className="hover:text-[#ea0600] transition-colors" title="Facebook">
               <i className="fa-brands fa-facebook-f text-sm"></i>
             </a>
-            <a href="https://www.instagram.com/kandil.realestate/" target="_blank" rel="noreferrer" className="hover:text-[#ea0600] transition-colors" title="Instagram">
+            <a href={socialData.instagram} target="_blank" rel="noreferrer" className="hover:text-[#ea0600] transition-colors" title="Instagram">
               <i className="fa-brands fa-instagram text-sm"></i>
             </a>
-            <a href="https://www.youtube.com/c/KandilRealEstate" target="_blank" rel="noreferrer" className="hover:text-[#ea0600] transition-colors" title="YouTube">
+            <a href={socialData.youtube} target="_blank" rel="noreferrer" className="hover:text-[#ea0600] transition-colors" title="YouTube">
               <i className="fa-brands fa-youtube text-sm"></i>
             </a>
-            <a href="https://wa.me/201010099116" target="_blank" rel="noreferrer" className="hover:text-[#ea0600] transition-colors" title="WhatsApp">
+            <a href={`https://wa.me/${socialData.whatsapp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="hover:text-[#ea0600] transition-colors" title="WhatsApp">
               <i className="fa-brands fa-whatsapp text-sm"></i>
             </a>
           </div>
@@ -374,24 +411,24 @@ export const Header = () => {
             {/* Drawer Footer */}
             <div className="pt-4 border-t border-gray-100">
               <a
-                href="tel:19473"
+                href={`tel:${socialData.hotline}`}
                 className="flex items-center justify-center gap-2 w-full bg-[#d61c23] text-white font-bold py-3 rounded-lg shadow"
               >
                 <Phone className="w-5 h-5 text-[#f59e0b]" />
-                <span>الخط الساخن: 19473</span>
+                <span>الخط الساخن: {socialData.hotline}</span>
               </a>
 
               <div className="flex justify-center gap-5 mt-4 text-gray-500">
-                <a href="https://www.facebook.com/kandilrealestateinvestment" target="_blank" rel="noreferrer">
+                <a href={socialData.facebook} target="_blank" rel="noreferrer">
                   <i className="fa-brands fa-facebook-f text-lg"></i>
                 </a>
-                <a href="https://www.instagram.com/kandil.realestate/" target="_blank" rel="noreferrer">
+                <a href={socialData.instagram} target="_blank" rel="noreferrer">
                   <i className="fa-brands fa-instagram text-lg"></i>
                 </a>
-                <a href="https://wa.me/201010099116" target="_blank" rel="noreferrer">
+                <a href={`https://wa.me/${socialData.whatsapp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer">
                   <i className="fa-brands fa-whatsapp text-lg"></i>
                 </a>
-                <a href="https://www.youtube.com/c/KandilRealEstate" target="_blank" rel="noreferrer">
+                <a href={socialData.youtube} target="_blank" rel="noreferrer">
                   <i className="fa-brands fa-youtube text-lg"></i>
                 </a>
               </div>
