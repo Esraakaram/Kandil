@@ -57,7 +57,12 @@ export const ProjectCategory = () => {
       {/* Areas Grid */}
       <section className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {projectsWithArea.map((area) => (
+          {projectsWithArea.map((area) => {
+            const displayImg =
+              area.imageName ||
+              _optionalChain([area, 'access', _ => _.viewProject, 'access', _2 => _2[0], 'optionalAccess', _3 => _3.imageName]) ||
+              _optionalChain([area, 'access', _ => _.viewProject, 'access', _2 => _2[0], 'optionalAccess', _3 => _3.mainImage]);
+            return (
             <div
               key={area.id}
               className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
@@ -66,11 +71,11 @@ export const ProjectCategory = () => {
                 <div className="relative h-56 overflow-hidden bg-gray-100">
                   <img
                     src={
-                      _optionalChain([area, 'access', _ => _.viewProject, 'access', _2 => _2[0], 'optionalAccess', _3 => _3.imageName])
-                        ? getImageUrl(area.viewProject[0].imageName)
+                      displayImg
+                        ? getImageUrl(displayImg)
                         : 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80'
                     }
-                    alt={area.areaName}
+                    alt={area.areaName || area.name}
                     className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
                     onError={(e) => {
                       (e.target ).src =
@@ -80,7 +85,7 @@ export const ProjectCategory = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent"></div>
                   
                   <span className="absolute bottom-3 right-3 text-xs bg-[#d61c23] text-white px-3 py-1 rounded-full font-bold shadow">
-                    {area.viewProject.length} مشروعات منفذة
+                    {area.viewProject?.length || 0} مشروعات منفذة
                   </span>
                 </div>
 
@@ -118,7 +123,7 @@ export const ProjectCategory = () => {
                 </Link>
               </div>
             </div>
-          ))}
+          );})}
         </div>
       </section>
     </div>

@@ -29,8 +29,8 @@ export const WhyUs = () => {
           setWhyUsItems(whyUsRes);
         }
         if (Array.isArray(coversRes)) {
-          const cover = coversRes.find((c) => c.pageName === 'لماذا قنديل');
-          if (cover) setCoverImage(getImageUrl(cover.imageName));
+          const cover = coversRes.find((c) => c.pageName && c.pageName.includes('لماذا قنديل'));
+          if (cover && cover.imageName) setCoverImage(getImageUrl(cover.imageName));
         }
         setLoading(false);
       })
@@ -81,20 +81,14 @@ export const WhyUs = () => {
     <div className="space-y-20 pb-20 bg-gray-50/50">
       {/* 1. Hero Banner */}
       <div className="relative min-h-[340px] md:min-h-[420px] bg-[#26070a] text-white overflow-hidden flex items-center">
-        {coverImage ? (
+        {coverImage && (
           <img
             src={coverImage}
             alt="لماذا قنديل"
-            className="absolute inset-0 w-full h-full object-cover filter brightness-40"
+            className="absolute inset-0 w-full h-full object-cover filter brightness-40 transition-opacity duration-700 animate-in fade-in"
             onError={(e) => {
               e.target.style.display = 'none';
             }}
-          />
-        ) : (
-          <img
-            src="/uploads/e47551a2-8091-439c-aca7-e32ca4629129.png"
-            alt="لماذا قنديل"
-            className="absolute inset-0 w-full h-full object-cover filter brightness-40"
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#26070a] via-[#26070a]/70 to-transparent"></div>

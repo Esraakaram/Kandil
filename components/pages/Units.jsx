@@ -340,7 +340,7 @@ export const Units = () => {
             {/* Control Bar: Count, Sort, Grid/List */}
             <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
               <span className="text-sm font-bold text-gray-700">
-                إجمالي النتائج: <strong className="text-[#d61c23] font-black">{filteredUnits.length}</strong> وحدة
+                إجمالي النتائج: <strong className="text-[#d61c23] font-black">{loading ? '...' : filteredUnits.length}</strong> وحدة
               </span>
 
               <div className="flex items-center gap-4">
@@ -381,7 +381,32 @@ export const Units = () => {
             </div>
 
             {/* Results Grid / List */}
-            {currentUnits.length === 0 ? (
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3, 4, 5, 6].map((n) => (
+                  <div
+                    key={n}
+                    className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm animate-pulse flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="h-52 bg-slate-200"></div>
+                      <div className="p-5 space-y-3">
+                        <div className="h-4 bg-slate-200 rounded w-1/3"></div>
+                        <div className="h-5 bg-slate-200 rounded w-3/4"></div>
+                        <div className="h-4 bg-slate-200 rounded w-1/2"></div>
+                        <div className="pt-3 border-t border-gray-100 flex justify-between gap-4">
+                          <div className="h-4 bg-slate-200 rounded w-1/3"></div>
+                          <div className="h-4 bg-slate-200 rounded w-1/3"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-5 pt-0">
+                      <div className="h-10 bg-slate-200 rounded-xl"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : currentUnits.length === 0 ? (
               <div className="bg-white p-12 rounded-2xl border border-gray-100 text-center space-y-4">
                 <div className="w-16 h-16 mx-auto rounded-full bg-gray-100 text-gray-400 flex items-center justify-center">
                   <Search className="w-8 h-8" />
@@ -568,7 +593,7 @@ export const Units = () => {
             )}
 
             {/* Pagination Controls */}
-            {totalPages > 1 && (
+            {!loading && totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 pt-8">
                 <button
                   disabled={currentPage === 1}

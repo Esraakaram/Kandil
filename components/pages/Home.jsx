@@ -515,7 +515,12 @@ export const Home = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projectsWithArea.map((area) => (
+            {projectsWithArea.map((area) => {
+              const displayImg =
+                area.imageName ||
+                _optionalChain([area, 'access', _5 => _5.viewProject, 'access', _6 => _6[0], 'optionalAccess', _7 => _7.imageName]) ||
+                _optionalChain([area, 'access', _5 => _5.viewProject, 'access', _6 => _6[0], 'optionalAccess', _7 => _7.mainImage]);
+              return (
               <Link
                 key={area.id}
                 to={`/projectcategory/${area.id}`}
@@ -524,11 +529,11 @@ export const Home = () => {
                 <div className="relative h-48 overflow-hidden bg-gray-200">
                   <img
                     src={
-                      _optionalChain([area, 'access', _5 => _5.viewProject, 'access', _6 => _6[0], 'optionalAccess', _7 => _7.imageName])
-                        ? getImageUrl(area.viewProject[0].imageName)
+                      displayImg
+                        ? getImageUrl(displayImg)
                         : 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80'
                     }
-                    alt={area.areaName}
+                    alt={area.areaName || area.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     onError={(e) => {
                       (e.target ).src =
@@ -540,7 +545,7 @@ export const Home = () => {
                   <div className="absolute bottom-4 right-4 left-4 flex justify-between items-end text-white">
                     <div>
                       <h3 className="font-black text-xl text-white mb-1 group-hover:text-[#f59e0b] transition-colors">
-                        {area.areaName}
+                        {area.areaName || area.name}
                       </h3>
                       <span className="text-xs text-gray-200 font-medium">
                         {_optionalChain([area, 'access', _8 => _8.viewProject, 'optionalAccess', _9 => _9.length]) || 0} مشروعات سكنية
@@ -553,7 +558,7 @@ export const Home = () => {
                   </div>
                 </div>
               </Link>
-            ))}
+            );})}
           </div>
         </div>
       </section>

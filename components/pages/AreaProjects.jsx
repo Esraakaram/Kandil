@@ -77,7 +77,7 @@ export const AreaProjects = () => {
               <div>
                 <div className="relative h-60 overflow-hidden bg-gray-100">
                   <img
-                    src={getImageUrl(project.imageName)}
+                    src={getImageUrl(project.imageName || project.mainImage)}
                     alt={project.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     onError={(e) => {
