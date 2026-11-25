@@ -146,10 +146,15 @@ export const MediaArticle = () => {
             article.description
               ? !/<[a-z][\s\S]*>/i.test(article.description)
                 ? article.description
-                    .split(/\r?\n\r?\n/)
-                    .map((p) => `<p>${p.replace(/\r?\n/g, '<br/>')}</p>`)
+                    .split(/\r?\n+/)
+                    .map((p) => p.trim())
+                    .filter(Boolean)
+                    .map((p) => `<p>${p}</p>`)
                     .join('')
-                : article.description.replace(/className=/g, 'class=')
+                : article.description
+                    .replace(/className=/gi, 'class=')
+                    .replace(/\sstyle="[^"]*"/gi, '')
+                    .replace(/\sstyle='[^']*'/gi, '')
               : ''
         }}
       />

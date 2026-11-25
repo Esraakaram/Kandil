@@ -471,10 +471,8 @@ export const UnitDetails = () => {
                     </button>
 
                     <a
-                      href={getImageUrl(unit.pdfFile || unit.project?.pdfFile)}
-                      download
-                      target="_blank"
-                      rel="noreferrer"
+                      href={`/api/pdf/unit/${unit.id}?download=1`}
+                      download={`kandil-unit-${unit.id}.pdf`}
                       className="px-5 py-2.5 rounded-xl bg-[#d61c23] hover:bg-[#b7151b] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md hover:scale-103"
                     >
                       <Download className="w-4 h-4" />
@@ -484,11 +482,9 @@ export const UnitDetails = () => {
                 </div>
 
                 {showPdfViewer && (
-                  <div className="mt-4 border border-gray-200 rounded-2xl overflow-hidden h-[500px] bg-slate-900">
+                  <div className="mt-4 border border-gray-200 rounded-2xl overflow-hidden h-[580px] bg-slate-100">
                     <iframe
-                      src={`https://docs.google.com/viewer?url=${encodeURIComponent(
-                        getImageUrl(unit.pdfFile || unit.project?.pdfFile)
-                      )}&embedded=true`}
+                      src={`/api/pdf/unit/${unit.id}#toolbar=1`}
                       className="w-full h-full border-0"
                       title="معاينة البروشور"
                     ></iframe>

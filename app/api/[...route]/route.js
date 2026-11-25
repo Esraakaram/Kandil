@@ -11,6 +11,48 @@ export async function GET(req, { params }) {
     const fullPath = pathParts.join('/').toLowerCase();
     const { searchParams } = new URL(req.url);
 
+    // 0. Binary PDF Streaming Endpoint: /api/pdf/unit/[id] or /api/pdf/project/[id]
+    if (pathParts.length === 3 && pathParts[0].toLowerCase() === 'pdf') {
+      const entityType = pathParts[1].toLowerCase();
+      const entityId = pathParts[2];
+      const isDownload = searchParams.get('download') === '1';
+
+      let pdfSource = '';
+      if (entityType === 'unit') {
+        const unit = await dbService.getUnitById(entityId);
+        pdfSource = unit?.pdfFile || unit?.project?.pdfFile || '';
+      } else if (entityType === 'project') {
+        const project = await dbService.getProjectById(entityId);
+        pdfSource = project?.pdfFile || '';
+      }
+
+      if (!pdfSource) {
+        return NextResponse.json({ message: 'PDF brochure not found' }, { status: 404 });
+      }
+
+      if (pdfSource.startsWith('data:')) {
+        const base64Part = pdfSource.includes(',') ? pdfSource.split(',')[1] : pdfSource;
+        const pdfBuffer = Buffer.from(base64Part, 'base64');
+        return new NextResponse(pdfBuffer, {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': isDownload
+              ? `attachment; filename="kandil-${entityType}-${entityId}.pdf"`
+              : `inline; filename="kandil-${entityType}-${entityId}.pdf"`,
+            'Cache-Control': 'public, max-age=3600'
+          }
+        });
+      }
+
+      if (pdfSource.startsWith('http://') || pdfSource.startsWith('https://')) {
+        return NextResponse.redirect(pdfSource);
+      }
+
+      const cleanPath = pdfSource.startsWith('/') ? pdfSource : `/uploads/${pdfSource.split('/').pop()}`;
+      return NextResponse.redirect(new URL(cleanPath, req.url));
+    }
+
     // 1. Cities & Areas
     if (fullPath === 'cities/getcitywitharea') {
       const data = await dbService.getCitiesWithArea();

@@ -133,7 +133,7 @@ export function getImageUrl(imageName, entityType = '') {
     return '/uploads/9921ac91-0ef8-4e80-add7-b0149521419a.png';
   }
 
-  if (imageName.startsWith('data:image/') || imageName.startsWith('http://') || imageName.startsWith('https://')) {
+  if (imageName.startsWith('data:') || imageName.startsWith('http://') || imageName.startsWith('https://')) {
     return imageName;
   }
   if (imageName.startsWith('/')) {

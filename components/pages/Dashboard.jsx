@@ -346,6 +346,29 @@ const PdfUploader = ({ label = 'ملف البروشور / PDF الخاص بال�
 
   const previewUrl = value ? getImageUrl(value) : null;
 
+  const handleOpenPdfPreview = () => {
+    if (!previewUrl) return;
+    if (previewUrl.startsWith('data:')) {
+      try {
+        const parts = previewUrl.split(',');
+        const mime = parts[0].match(/:(.*?);/)?.[1] || 'application/pdf';
+        const byteString = atob(parts[1]);
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+          ia[i] = byteString.charCodeAt(i);
+        }
+        const blob = new Blob([ab], { type: mime });
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, '_blank', 'noopener,noreferrer');
+        return;
+      } catch (err) {
+        console.error('Failed to preview data PDF:', err);
+      }
+    }
+    window.open(previewUrl, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div className="space-y-2">
       {label && <label className="block text-xs font-bold text-gray-700">{label}</label>}
@@ -388,15 +411,14 @@ const PdfUploader = ({ label = 'ملف البروشور / PDF الخاص بال�
             </button>
 
             {previewUrl && (
-              <a
-                href={previewUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-1.5 text-xs font-bold text-[#d61c23] bg-red-50 hover:bg-red-100 px-3 py-2 rounded-xl border border-red-100 transition"
+              <button
+                type="button"
+                onClick={handleOpenPdfPreview}
+                className="flex items-center gap-1.5 text-xs font-bold text-[#d61c23] bg-red-50 hover:bg-red-100 px-3 py-2 rounded-xl border border-red-100 transition cursor-pointer"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
                 <span>معاينة / فتح الملف</span>
-              </a>
+              </button>
             )}
 
             {value && (
@@ -452,36 +474,107 @@ const RichTextEditor = ({ label = 'محتوى المقال', value = '', onChang
     }, 50);
   };
 
-  // Auto format: turns plain text / pasted paragraphs into clean semantic HTML
+  // Auto format: turns plain text, single-newline text, or messy pasted HTML into clean semantic HTML
   const handleAutoFormatParagraphs = () => {
     if (!value) return;
-    const raw = String(value);
+    let raw = String(value);
 
-    // If it's already well-formatted HTML with multiple paragraph tags, confirm re-formatting
-    let textToProcess = raw
+    // 1. Remove scripts, styles, comments, and Word inline styles/classes that break site typography
+    raw = raw
       .replace(/<!--[\s\S]*?-->/g, '')
       .replace(/<style[\s\S]*?<\/style>/gi, '')
-      .replace(/<script[\s\S]*?<\/script>/gi, '');
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/\sclassName=/gi, ' class=')
+      .replace(/\sstyle="[^"]*"/gi, '')
+      .replace(/\sstyle='[^']*'/gi, '');
 
-    // Split by two or more newlines or existing loose tags
-    const chunks = textToProcess
-      .split(/\r?\n\r?\n+/)
-      .map((c) => c.trim())
+    // 2. Convert HTML block boundaries into clean newlines so pasted HTML / Word content gets re-structured
+    raw = raw
+      .replace(/<\/(p|div|h[1-6]|li|blockquote|tr)>/gi, '\n')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/?(p|div|span|font|ul|ol|section|article)[^>]*>/gi, '')
+      .replace(/&nbsp;/gi, ' ');
+
+    // 3. Split by any newline so both single-line-break and double-line-break pasted texts become clean paragraphs
+    const lines = raw
+      .split(/\r?\n+/)
+      .map((l) => l.trim())
       .filter(Boolean);
 
-    const formatted = chunks
-      .map((chunk) => {
-        // If it starts with h2, h3, ul, ol, blockquote, leave it as is
-        if (/^<(h[1-6]|ul|ol|blockquote|div|table)/i.test(chunk)) {
-          return chunk;
-        }
-        // Remove surrounding bare <p></p> to normalize
-        const stripped = chunk.replace(/^<p[^>]*>/i, '').replace(/<\/p>$/i, '').trim();
-        return `<p class="mb-4 leading-relaxed text-gray-700">${stripped.replace(/\r?\n/g, '<br/>')}</p>`;
-      })
-      .join('\n\n');
+    const blocks = [];
+    let currentListType = null; // 'ul' | 'ol' | null
+    let currentListItems = [];
 
+    const flushList = () => {
+      if (currentListType && currentListItems.length > 0) {
+        const listClass =
+          currentListType === 'ul'
+            ? 'list-disc list-inside space-y-2 my-4 text-gray-700'
+            : 'list-decimal list-inside space-y-2 my-4 text-gray-700';
+        blocks.push(
+          `<${currentListType} class="${listClass}">\n${currentListItems
+            .map((item) => `  <li>${item}</li>`)
+            .join('\n')}\n</${currentListType}>`
+        );
+      }
+      currentListType = null;
+      currentListItems = [];
+    };
+
+    for (const line of lines) {
+      // Preserve existing headings / blockquotes
+      if (/^<h[1-6][^>]*>/i.test(line)) {
+        flushList();
+        const inner = line.replace(/^<h([1-6])[^>]*>/i, '').replace(/<\/h[1-6]>$/i, '').trim();
+        const level = line.match(/^<h([1-6])/i)?.[1] || '2';
+        blocks.push(level === '3' ? `<h3>${inner}</h3>` : `<h2>${inner}</h2>`);
+        continue;
+      }
+      if (/^<blockquote[^>]*>/i.test(line)) {
+        flushList();
+        const inner = line.replace(/^<blockquote[^>]*>/i, '').replace(/<\/blockquote>$/i, '').trim();
+        blocks.push(`<blockquote>${inner}</blockquote>`);
+        continue;
+      }
+
+      // Detect bullet list items (-, •, *, –, ✓, ✔, ▪, ●)
+      const bulletMatch = line.match(/^(?:[-•*–✓✔▪●]|<li[^>]*>)\s+(.+)$/i);
+      if (bulletMatch) {
+        if (currentListType !== 'ul') {
+          flushList();
+          currentListType = 'ul';
+        }
+        currentListItems.push(bulletMatch[1].trim());
+        continue;
+      }
+
+      // Detect numbered list items (1. , 1- , 1) )
+      const numMatch = line.match(/^\d+[.\-)]\s+(.+)$/);
+      if (numMatch) {
+        if (currentListType !== 'ol') {
+          flushList();
+          currentListType = 'ol';
+        }
+        currentListItems.push(numMatch[1].trim());
+        continue;
+      }
+
+      flushList();
+
+      // Detect short standalone headings (e.g. ending with : or ؟ or ? and <= 90 chars)
+      const plainText = line.replace(/<[^>]*>/g, '').trim();
+      if (plainText.length > 0 && plainText.length <= 90 && /[:؟?]$/.test(plainText)) {
+        blocks.push(`<h2>${line}</h2>`);
+      } else {
+        blocks.push(`<p>${line}</p>`);
+      }
+    }
+
+    flushList();
+
+    const formatted = blocks.join('\n\n');
     onChange(formatted);
+    setActiveView('preview');
   };
 
   const handleAddLink = () => {
@@ -1377,6 +1470,10 @@ export const Dashboard = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(editingArticle)
         });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || errData.message || 'فشل تحديث المقال');
+        }
         const updated = await res.json();
         setArticles((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
         showToast('تم تحديث المقال بنجاح');
@@ -1386,6 +1483,10 @@ export const Dashboard = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(editingArticle)
         });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || errData.message || 'فشل إضافة المقال');
+        }
         const created = await res.json();
         setArticles((prev) => [created, ...prev]);
         showToast('تمت إضافة المقال بنجاح');

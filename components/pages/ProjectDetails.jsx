@@ -611,10 +611,8 @@ export const ProjectDetails = () => {
                         </button>
 
                         <a
-                          href={pdfBrochureUrl}
-                          download
-                          target="_blank"
-                          rel="noreferrer"
+                          href={`/api/pdf/project/${project.id}?download=1`}
+                          download={`kandil-project-${project.id}.pdf`}
                           className="px-5 py-2.5 rounded-xl bg-[#d61c23] hover:bg-[#b7151b] text-white font-bold text-xs shadow flex items-center gap-2 transition"
                         >
                           <Download className="w-4 h-4" />
@@ -636,9 +634,9 @@ export const ProjectDetails = () => {
                             <span>إغلاق المعاينة</span>
                           </button>
                         </div>
-                        <div className="w-full h-[600px] rounded-2xl overflow-hidden border border-gray-200 bg-slate-900 shadow-inner">
+                        <div className="w-full h-[600px] rounded-2xl overflow-hidden border border-gray-200 bg-slate-100 shadow-inner">
                           <iframe
-                            src={`https://docs.google.com/viewer?url=${encodeURIComponent(pdfBrochureUrl)}&embedded=true`}
+                            src={`/api/pdf/project/${project.id}#toolbar=1`}
                             title="معاينة البروشور"
                             className="w-full h-full border-0"
                           ></iframe>
