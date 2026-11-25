@@ -66,10 +66,10 @@ export const MediaCenter = () => {
             متابعة حية للتطورات العمرانية
           </span>
           <h1 className="text-3xl md:text-5xl font-black text-white mb-2">
-            المركز الإعلامي
+            المركز الإعلامي والمقالات
           </h1>
           <p className="text-gray-300 text-sm max-w-xl">
-            أحدث أخبار مشروعات شركة قنديل، المقالات التحليلية للسوق العقاري، والتقارير المصورة.
+            أحدث مقالات وتقارير شركة قنديل، المقالات التحليلية للسوق العقاري، والتقارير المصورة.
           </p>
         </div>
       </div>
@@ -85,29 +85,31 @@ export const MediaCenter = () => {
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            كافة الأخبار والمقالات
+            كافة المقالات والتغطيات
           </button>
 
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`px-5 py-2.5 rounded-full font-bold text-xs transition-all ${
-                activeCategory === cat.id
-                  ? 'bg-[#d61c23] text-white shadow-md'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              {cat.title}
-            </button>
-          ))}
+          {categories
+            .filter((cat) => !cat.title?.includes('أخبار'))
+            .map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`px-5 py-2.5 rounded-full font-bold text-xs transition-all ${
+                  activeCategory === cat.id
+                    ? 'bg-[#d61c23] text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {cat.title}
+              </button>
+            ))}
         </div>
 
         {/* Articles Grid or Empty State */}
         {loading ? (
           <div className="py-20 text-center">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#d61c23] border-t-transparent"></div>
-            <p className="mt-2 text-xs text-gray-500">جاري تحميل الأخبار والمقالات...</p>
+            <p className="mt-2 text-xs text-gray-500">جاري تحميل المقالات والتغطيات...</p>
           </div>
         ) : articles.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 border border-gray-100 text-center max-w-lg mx-auto shadow-sm space-y-4">
@@ -116,13 +118,13 @@ export const MediaCenter = () => {
             </div>
             <h3 className="text-lg font-black text-gray-800">لا توجد مقالات منشورة في هذا القسم حالياً</h3>
             <p className="text-xs text-gray-500 leading-relaxed">
-              يتم العمل على نشر مقالات وتقارير جديدة قريباً، يمكنك تصفح باقي الأقسام أو العودة لكافة الأخبار.
+              يتم العمل على نشر مقالات وتقارير جديدة قريباً، يمكنك تصفح باقي الأقسام أو العودة لكافة المقالات.
             </p>
             <button
               onClick={() => setActiveCategory(0)}
               className="px-6 py-2.5 rounded-full bg-[#d61c23] hover:bg-[#b7151b] text-white text-xs font-bold transition shadow"
             >
-              عرض كافة الأخبار والمقالات
+              عرض كافة المقالات والتغطيات
             </button>
           </div>
         ) : (

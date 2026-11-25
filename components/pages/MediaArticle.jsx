@@ -140,8 +140,16 @@ export const MediaArticle = () => {
 
       {/* Article HTML Content */}
       <div
-        className="prose prose-base max-w-none text-gray-700 leading-relaxed space-y-4"
-        dangerouslySetInnerHTML={{ __html: article.description }}
+        className="prose prose-lg max-w-none text-gray-800 leading-relaxed space-y-4 font-sans text-right prose-headings:font-black prose-headings:text-gray-900 prose-p:leading-loose prose-a:text-[#d61c23] prose-strong:text-gray-900 prose-blockquote:border-r-4 prose-blockquote:border-[#d61c23] prose-blockquote:bg-red-50/50 prose-blockquote:p-4 prose-blockquote:rounded-r-xl"
+        dangerouslySetInnerHTML={{
+          __html:
+            article.description && !/<[a-z][\s\S]*>/i.test(article.description)
+              ? article.description
+                  .split(/\r?\n\r?\n/)
+                  .map((p) => `<p>${p.replace(/\r?\n/g, '<br/>')}</p>`)
+                  .join('')
+              : article.description || ''
+        }}
       />
 
       {/* Related Articles */}

@@ -310,6 +310,335 @@ const ImageUploader = ({ label, value, onChange, placeholder = 'اختر صور�
   );
 };
 
+const PdfUploader = ({ label = 'ملف البروشور / PDF الخاص بالمشروع (رفع ملف)', value, onChange }) => {
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleFileChange = async (e) => {
+    const rawFile = e.target.files?.[0];
+    if (!rawFile) return;
+
+    if (rawFile.size > 30 * 1024 * 1024) {
+      setError('حجم الملف كبير جداً (الحد الأقصى 30 ميجابايت)');
+      return;
+    }
+
+    setError(null);
+    setUploading(true);
+    try {
+      const res = await api.uploadImage(rawFile);
+      if (res && res.url) {
+        onChange(res.url);
+      } else {
+        throw new Error('فشل رفع الملف');
+      }
+    } catch (err) {
+      console.error('PDF upload error:', err);
+      setError(err?.message || 'حدث خطأ أثناء رفع ملف PDF');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const previewUrl = value ? getImageUrl(value) : null;
+
+  return (
+    <div className="space-y-2">
+      {label && <label className="block text-xs font-bold text-gray-700">{label}</label>}
+
+      <div className="flex flex-col sm:flex-row items-center gap-4 p-4 border border-dashed border-gray-300 rounded-2xl bg-gray-50/70 hover:bg-gray-50 transition">
+        <div className="w-20 h-20 rounded-xl border border-gray-200 bg-white flex flex-col items-center justify-center text-gray-400 flex-shrink-0">
+          <FileText className={`w-8 h-8 ${value ? 'text-[#d61c23]' : 'text-gray-300'}`} />
+          <span className="text-[10px] font-bold mt-1 text-gray-600">
+            {value ? 'PDF متاح' : 'ملف PDF'}
+          </span>
+        </div>
+
+        <div className="flex-1 w-full text-right space-y-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,application/pdf"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              disabled={uploading}
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 text-xs font-bold shadow-sm transition disabled:opacity-50"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#d61c23]" />
+                  <span>جاري رفع ملف الـ PDF...</span>
+                </>
+              ) : (
+                <>
+                  <UploadCloud className="w-3.5 h-3.5 text-[#d61c23]" />
+                  <span>{value ? 'تغيير ملف الـ PDF' : 'رفع ملف PDF من جهازك'}</span>
+                </>
+              )}
+            </button>
+
+            {previewUrl && (
+              <a
+                href={previewUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1.5 text-xs font-bold text-[#d61c23] bg-red-50 hover:bg-red-100 px-3 py-2 rounded-xl border border-red-100 transition"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>معاينة / فتح الملف</span>
+              </a>
+            )}
+
+            {value && (
+              <button
+                type="button"
+                onClick={() => onChange('')}
+                className="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1"
+              >
+                إزالة الملف
+              </button>
+            )}
+          </div>
+
+          <p className="text-[11px] text-gray-400">
+            صيغة الملف: PDF كتالوج وبروشور المشروع (الحد الأقصى 30MB)
+          </p>
+
+          {value && (
+            <p className="text-[10px] text-gray-400 font-mono truncate max-w-sm" dir="ltr">
+              {value}
+            </p>
+          )}
+
+          {error && <p className="text-[11px] text-red-500 font-bold">{error}</p>}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const RichTextEditor = ({ label = 'محتوى المقال', value = '', onChange }) => {
+  const editorRef = useRef(null);
+  const [showHtml, setShowHtml] = useState(false);
+
+  useEffect(() => {
+    if (editorRef.current && !showHtml) {
+      if (editorRef.current.innerHTML !== (value || '')) {
+        editorRef.current.innerHTML = value || '';
+      }
+    }
+  }, [value, showHtml]);
+
+  const exec = (command, val = null) => {
+    document.execCommand(command, false, val);
+    if (editorRef.current) {
+      onChange(editorRef.current.innerHTML);
+    }
+  };
+
+  const handleInput = () => {
+    if (editorRef.current) {
+      onChange(editorRef.current.innerHTML);
+    }
+  };
+
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const htmlData = e.clipboardData.getData('text/html');
+    const textData = e.clipboardData.getData('text/plain');
+
+    if (htmlData) {
+      let clean = htmlData
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/<style[\s\S]*?<\/style>/gi, '')
+        .replace(/class="[^"]*"/gi, '')
+        .replace(/style="[^"]*"/gi, '');
+      document.execCommand('insertHTML', false, clean);
+    } else if (textData) {
+      const paragraphs = textData
+        .split(/\r?\n\r?\n/)
+        .map((p) => p.trim())
+        .filter(Boolean)
+        .map((p) => `<p>${p.replace(/\r?\n/g, '<br/>')}</p>`)
+        .join('');
+      document.execCommand('insertHTML', false, paragraphs || textData);
+    }
+    if (editorRef.current) {
+      onChange(editorRef.current.innerHTML);
+    }
+  };
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <label className="block text-xs font-bold text-gray-700">{label}</label>
+        <button
+          type="button"
+          onClick={() => setShowHtml(!showHtml)}
+          className="text-[11px] font-bold text-gray-500 hover:text-[#d61c23] transition flex items-center gap-1"
+        >
+          {showHtml ? 'عرض التحرير المرئي' : 'تعديل كود HTML'}
+        </button>
+      </div>
+
+      <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm focus-within:border-[#d61c23]">
+        {!showHtml && (
+          <div className="flex flex-wrap items-center gap-1 p-2 bg-gray-50 border-b border-gray-200 text-gray-700">
+            <select
+              onChange={(e) => {
+                if (e.target.value) exec('formatBlock', e.target.value);
+                e.target.value = '';
+              }}
+              className="text-xs font-bold bg-white border border-gray-200 rounded-lg px-2 py-1 focus:outline-none"
+              defaultValue=""
+            >
+              <option value="" disabled>تنسيق الفقرة...</option>
+              <option value="<h2>">عنوان رئيسي (H2)</option>
+              <option value="<h3>">عنوان فرعي (H3)</option>
+              <option value="<h4>">عنوان جانبي (H4)</option>
+              <option value="<p>">نص عادي (فقرة)</option>
+            </select>
+
+            <span className="w-px h-5 bg-gray-200 mx-1"></span>
+
+            <button
+              type="button"
+              onClick={() => exec('bold')}
+              className="p-1.5 hover:bg-gray-200 rounded text-xs font-black w-7 h-7 flex items-center justify-center"
+              title="غامق (Bold)"
+            >
+              B
+            </button>
+            <button
+              type="button"
+              onClick={() => exec('italic')}
+              className="p-1.5 hover:bg-gray-200 rounded text-xs italic font-serif w-7 h-7 flex items-center justify-center"
+              title="مائل (Italic)"
+            >
+              I
+            </button>
+            <button
+              type="button"
+              onClick={() => exec('underline')}
+              className="p-1.5 hover:bg-gray-200 rounded text-xs underline font-bold w-7 h-7 flex items-center justify-center"
+              title="تسطير (Underline)"
+            >
+              U
+            </button>
+
+            <span className="w-px h-5 bg-gray-200 mx-1"></span>
+
+            <button
+              type="button"
+              onClick={() => exec('insertUnorderedList')}
+              className="p-1.5 hover:bg-gray-200 rounded text-xs font-bold px-2 h-7 flex items-center justify-center"
+              title="قائمة نقطية"
+            >
+              • قائمة
+            </button>
+            <button
+              type="button"
+              onClick={() => exec('insertOrderedList')}
+              className="p-1.5 hover:bg-gray-200 rounded text-xs font-bold px-2 h-7 flex items-center justify-center"
+              title="قائمة رقمية"
+            >
+              1. قائمة
+            </button>
+
+            <span className="w-px h-5 bg-gray-200 mx-1"></span>
+
+            <button
+              type="button"
+              onClick={() => exec('justifyRight')}
+              className="p-1.5 hover:bg-gray-200 rounded text-xs font-bold px-1.5 h-7 flex items-center justify-center"
+              title="محاذاة لليمين"
+            >
+              يمين
+            </button>
+            <button
+              type="button"
+              onClick={() => exec('justifyCenter')}
+              className="p-1.5 hover:bg-gray-200 rounded text-xs font-bold px-1.5 h-7 flex items-center justify-center"
+              title="توسيط"
+            >
+              وسط
+            </button>
+            <button
+              type="button"
+              onClick={() => exec('justifyLeft')}
+              className="p-1.5 hover:bg-gray-200 rounded text-xs font-bold px-1.5 h-7 flex items-center justify-center"
+              title="محاذاة لليسار"
+            >
+              يسار
+            </button>
+
+            <span className="w-px h-5 bg-gray-200 mx-1"></span>
+
+            <button
+              type="button"
+              onClick={() => exec('formatBlock', '<blockquote>')}
+              className="p-1.5 hover:bg-gray-200 rounded text-xs font-bold px-2 h-7 flex items-center justify-center"
+              title="اقتباس"
+            >
+              " اقتباس
+            </button>
+            <button
+              type="button"
+              onClick={() => exec('insertHorizontalRule')}
+              className="p-1.5 hover:bg-gray-200 rounded text-xs font-bold px-2 h-7 flex items-center justify-center"
+              title="خط فاصل"
+            >
+              ― فاصل
+            </button>
+
+            <button
+              type="button"
+              onClick={() => exec('removeFormat')}
+              className="p-1.5 hover:bg-red-50 hover:text-red-600 rounded text-xs font-bold px-2 h-7 flex items-center justify-center mr-auto"
+              title="إزالة التنسيق"
+            >
+              مسح التنسيق
+            </button>
+          </div>
+        )}
+
+        {showHtml ? (
+          <textarea
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+            rows="10"
+            className="w-full p-4 font-mono text-xs text-gray-800 bg-gray-50 focus:outline-none"
+            dir="ltr"
+            placeholder="<p>اكتب أو الصق كود HTML هنا...</p>"
+          ></textarea>
+        ) : (
+          <div
+            ref={editorRef}
+            contentEditable
+            onInput={handleInput}
+            onPaste={handlePaste}
+            className="min-h-[220px] max-h-[480px] overflow-y-auto p-4 text-xs sm:text-sm text-gray-800 focus:outline-none leading-relaxed prose prose-sm max-w-none"
+            dir="rtl"
+          ></div>
+        )}
+      </div>
+      <p className="text-[11px] text-gray-400">
+        يمكنك نسخ المقال من Word أو المواقع ولصقه مباشرة، واستخدام الأدوات أعلاه لتحديد العناوين والقوائم والتنسيق.
+      </p>
+    </div>
+  );
+};
+
 // ---------------------------------------------------------------------------
 // Main Dashboard Component
 // ---------------------------------------------------------------------------
@@ -2657,6 +2986,16 @@ export const Dashboard = () => {
                       </div>
 
                       <div className="sm:col-span-2">
+                        <PdfUploader
+                          label="ملف البروشور / PDF الخاص بالمشروع (رفع ملف)"
+                          value={editingProject.pdfFile || ''}
+                          onChange={(url) =>
+                            setEditingProject({ ...editingProject, pdfFile: url })
+                          }
+                        />
+                      </div>
+
+                      <div className="sm:col-span-2">
                         <label className="block text-xs font-bold text-gray-700 mb-1">عن المشروع (About Project)</label>
                         <textarea
                           rows="4"
@@ -4099,15 +4438,13 @@ export const Dashboard = () => {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 mb-1">محتوى المقال</label>
-                      <textarea
-                        rows="4"
+                      <RichTextEditor
+                        label="محتوى المقال (شريط أدوات وتنسيق متقدم)"
                         value={editingArticle.description || ''}
-                        onChange={(e) =>
-                          setEditingArticle({ ...editingArticle, description: e.target.value })
+                        onChange={(val) =>
+                          setEditingArticle({ ...editingArticle, description: val })
                         }
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-gray-800 focus:outline-none focus:border-[#d61c23]"
-                      ></textarea>
+                      />
                     </div>
 
                     <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">

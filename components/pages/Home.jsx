@@ -627,7 +627,7 @@ export const Home = () => {
                 المركز الإعلامي
               </span>
               <h2 className="text-3xl font-black text-gray-900">
-                أحدث الأخبار والمقالات
+                أحدث المقالات والتغطيات
               </h2>
             </div>
 
@@ -635,7 +635,7 @@ export const Home = () => {
               to="/mediaCategories"
               className="inline-flex items-center gap-2 text-[#d61c23] font-bold text-sm hover:underline"
             >
-              <span>تصفح كل الأخبار</span>
+              <span>تصفح كافة المقالات</span>
               <ArrowLeft className="w-4 h-4" />
             </Link>
           </div>
