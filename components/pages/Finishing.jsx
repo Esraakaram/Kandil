@@ -151,10 +151,10 @@ export const Finishing = () => {
                   ? getImageUrl(item.image)
                   : '/uploads/e47551a2-8091-439c-aca7-e32ca4629129.png';
                 return (
-                  <div
+                  <Link
                     key={item.id}
-                    onClick={() => setSelectedFinishingItem(item)}
-                    className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col justify-between cursor-pointer hover:-translate-y-1"
+                    to={`/finishcategory/${selectedCategory.id}/detail/${item.id}`}
+                    className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col justify-between cursor-pointer hover:-translate-y-1 block"
                   >
                     <div>
                       <div className="relative h-56 overflow-hidden bg-gray-100">
@@ -198,140 +198,20 @@ export const Finishing = () => {
                         <span>مشمول بالضمان الهندسي المعتمد</span>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedFinishingItem(item);
-                        }}
+                      <div
                         className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gray-50 group-hover:bg-[#d61c23] text-[#d61c23] group-hover:text-white font-bold text-xs border border-gray-200 group-hover:border-transparent transition-all shadow-sm"
                       >
-                        <span>عرض التفاصيل والفيديو</span>
+                        <span>فتح تفاصيل النموذج والفيديو</span>
                         <ArrowLeft className="w-4 h-4" />
-                      </button>
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                 );
               })}
             </div>
           </div>
         )}
       </section>
-
-      {/* Item Detail Modal */}
-      {selectedFinishingItem && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200"
-          onClick={() => setSelectedFinishingItem(null)}
-        >
-          <div
-            className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100 flex flex-col animate-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()}
-            dir="rtl"
-          >
-            {/* Modal Header */}
-            <div className="p-6 pb-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur z-20">
-              <div>
-                <span className="text-xs font-bold text-[#d61c23] block mb-1">
-                  {selectedCategory?.title || 'خدمات التشطيب والديكور'}
-                </span>
-                <h3 className="text-xl md:text-2xl font-black text-gray-900">
-                  {selectedFinishingItem.title}
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedFinishingItem(null)}
-                className="p-2 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="p-6 md:p-8 space-y-6">
-              {/* Video Player or Large Image */}
-              {selectedFinishingItem.videoUrl ? (
-                <div className="rounded-2xl overflow-hidden aspect-video bg-black shadow-xl border border-gray-200">
-                  <iframe
-                    src={getEmbedUrl(selectedFinishingItem.videoUrl)}
-                    title={selectedFinishingItem.title}
-                    className="w-full h-full border-0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  ></iframe>
-                </div>
-              ) : (
-                <div className="rounded-2xl overflow-hidden h-72 sm:h-96 bg-gray-100">
-                  <img
-                    src={
-                      selectedFinishingItem.imageName
-                        ? getImageUrl(selectedFinishingItem.imageName)
-                        : selectedFinishingItem.image
-                        ? getImageUrl(selectedFinishingItem.image)
-                        : '/uploads/e47551a2-8091-439c-aca7-e32ca4629129.png'
-                    }
-                    alt={selectedFinishingItem.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-
-              {/* Location / Meta */}
-              {selectedFinishingItem.nameLocation && (
-                <div className="flex items-center gap-2 text-xs font-bold text-gray-600 bg-gray-50 px-3 py-2 rounded-xl border border-gray-100">
-                  <span className="text-[#d61c23]">الموقع / المشروع:</span>
-                  <span>{selectedFinishingItem.nameLocation}</span>
-                </div>
-              )}
-
-              {/* Description */}
-              <div className="space-y-2">
-                <h4 className="text-sm font-black text-gray-900">مواصفات ونبذة عن النموذج:</h4>
-                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
-                  {selectedFinishingItem.description ||
-                    'تم تنفيذ هذا النموذج بأرقى خامات التشطيب الفندقي تحت إشراف هندسي وتنفيذي مباشر، لضمان استغلال المساحات بأعلى جودة وعزل كامل.'}
-                </p>
-              </div>
-
-              {/* Guarantee */}
-              <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center gap-3">
-                <CheckCircle className="w-6 h-6 text-emerald-600 shrink-0" />
-                <div className="text-xs">
-                  <span className="font-bold text-emerald-900 block">ضمان شامل معتمد</span>
-                  <span className="text-emerald-700">
-                    كافة بنود التشطيب والأعمال الكهروميكانيكية مشمولة بضمان شركة قنديل والصيانة الدورية.
-                  </span>
-                </div>
-              </div>
-
-              {/* Action: Pre-fill consult form */}
-              <div className="pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPackageChoice(`تشطيب نموذج: ${selectedFinishingItem.title}`);
-                    setSelectedFinishingItem(null);
-                    document.getElementById('consult-section')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="w-full sm:w-auto px-8 py-3.5 bg-[#d61c23] hover:bg-[#b7151b] text-white text-xs font-bold rounded-xl shadow-lg transition flex items-center justify-center gap-2"
-                >
-                  <span>طلب استشارة أو معاينة لهذا النموذج</span>
-                  <ArrowLeft className="w-4 h-4" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setSelectedFinishingItem(null)}
-                  className="px-6 py-3 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50"
-                >
-                  إغلاق
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Consultation Request Form */}
       <section id="consult-section" className="max-w-4xl mx-auto px-4 scroll-mt-20">
@@ -373,10 +253,21 @@ export const Finishing = () => {
                   <input
                     type="tel"
                     required
-                    inputMode="tel"
+                    inputMode="numeric"
+                    pattern="[0-9+]*"
                     value={phone}
+                    onKeyDown={(e) => {
+                      if (e.key.length === 1 && !/[0-9+]/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+                        e.preventDefault();
+                      }
+                    }}
                     onChange={(e) => setPhone(e.target.value.replace(/[^0-9+]/g, ''))}
-                    placeholder="01xxxxxxxxx"
+                    onPaste={(e) => {
+                      e.preventDefault();
+                      const paste = (e.clipboardData || window.clipboardData).getData('text');
+                      setPhone((prev) => (prev + paste.replace(/[^0-9+]/g, '')).slice(0, 20));
+                    }}
+                    placeholder="01xxxxxxxxx (أرقام فقط)"
                     className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-xs text-gray-800 focus:outline-none focus:border-[#d61c23]"
                     dir="ltr"
                   />

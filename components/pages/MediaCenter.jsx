@@ -89,7 +89,7 @@ export const MediaCenter = () => {
           </button>
 
           {categories
-            .filter((cat) => !cat.title?.includes('أخبار'))
+            .filter((cat) => !/(?:أخبار|اخبار|news)/i.test(cat.title || ''))
             .map((cat) => (
               <button
                 key={cat.id}

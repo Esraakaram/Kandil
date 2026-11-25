@@ -84,12 +84,13 @@ export const Header = () => {
             </span>
             <span className="text-white/60">|</span>
             <a
-              href={`tel:${socialData.hotline}`}
-              className="text-white/80 hover:text-white transition-colors inline-flex items-center gap-1"
-              title="اتصل بالخط الساخن"
+              href={`tel:${socialData.hotline || '19473'}`}
+              className="text-white/90 hover:text-white transition-all inline-flex items-center gap-1.5 cursor-pointer group hover:opacity-100"
+              title={`اتصل بالخط الساخن ${socialData.hotline || '19473'}`}
             >
+              <Phone className="w-3.5 h-3.5 text-[#f59e0b] group-hover:scale-110 transition-transform" />
               <span>الخط الساخن:</span>
-              <strong className="text-[#f59e0b] font-bold">{socialData.hotline}</strong>
+              <strong className="text-[#f59e0b] font-mono font-bold group-hover:underline tracking-wider">{socialData.hotline || '19473'}</strong>
             </a>
           </div>
           <div className="flex items-center gap-4">

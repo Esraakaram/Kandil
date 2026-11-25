@@ -155,7 +155,13 @@ export const ContactUs = () => {
                   className="font-mono text-sm font-bold text-gray-800 hover:text-[#25d366] block"
                   dir="ltr"
                 >
-                  <span dir="ltr" className="inline-block">{socialData.whatsapp.startsWith('+') ? socialData.whatsapp : `+${socialData.whatsapp}`}</span>
+                  <span
+                    dir="ltr"
+                    style={{ direction: 'ltr', unicodeBidi: 'bidi-override', display: 'inline-block' }}
+                    className="font-mono text-base font-bold tracking-wider"
+                  >
+                    {socialData.whatsapp.startsWith('+') ? socialData.whatsapp : `+${socialData.whatsapp}`}
+                  </span>
                 </a>
                 <span className="text-[11px] text-gray-400">رد فوري على مدار الساعة</span>
               </div>
@@ -236,10 +242,21 @@ export const ContactUs = () => {
                       <input
                         type="tel"
                         required
-                        inputMode="tel"
+                        inputMode="numeric"
+                        pattern="[0-9+]*"
                         value={phone}
+                        onKeyDown={(e) => {
+                          if (e.key.length === 1 && !/[0-9+]/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+                            e.preventDefault();
+                          }
+                        }}
                         onChange={(e) => setPhone(e.target.value.replace(/[^0-9+]/g, ''))}
-                        placeholder="01xxxxxxxxx (11 رقم)"
+                        onPaste={(e) => {
+                          e.preventDefault();
+                          const paste = (e.clipboardData || window.clipboardData).getData('text');
+                          setPhone((prev) => (prev + paste.replace(/[^0-9+]/g, '')).slice(0, 20));
+                        }}
+                        placeholder="01xxxxxxxxx (أرقام فقط)"
                         className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs text-gray-800 focus:outline-none focus:border-[#d61c23]"
                         dir="ltr"
                       />

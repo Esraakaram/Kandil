@@ -39,6 +39,7 @@ export const Home = () => {
   const [whyUsItems, setWhyUsItems] = useState([]);
   const [mediaItems, setMediaItems] = useState([]);
   const [landingPage, setLandingPage] = useState(null);
+  const [totalUnitsCount, setTotalUnitsCount] = useState(138);
   const [loading, setLoading] = useState(true);
 
   // Search filter bar state
@@ -63,15 +64,17 @@ export const Home = () => {
       api.getFeaturedUnits(),
       api.getWhyUs(),
       api.getMedia(),
-      api.getLandingPage().catch(() => null)
+      api.getLandingPage().catch(() => null),
+      api.getUnitsCount().catch(() => ({ count: 138 }))
     ])
-      .then(([citiesRes, projectsRes, unitsRes, whyUsRes, mediaRes, lpRes]) => {
+      .then(([citiesRes, projectsRes, unitsRes, whyUsRes, mediaRes, lpRes, countRes]) => {
         setCitiesData(citiesRes);
         setProjectsWithArea(projectsRes);
         setFeaturedUnits(unitsRes);
         setWhyUsItems(whyUsRes);
         setMediaItems(mediaRes);
         if (lpRes) setLandingPage(lpRes);
+        if (countRes?.count) setTotalUnitsCount(countRes.count);
         setLoading(false);
       })
       .catch((err) => {
@@ -396,7 +399,7 @@ export const Home = () => {
             to="/unit"
             className="inline-flex items-center gap-2 text-[#d61c23] font-bold text-sm hover:underline"
           >
-            <span>عرض كل الوحدات (54 وحدة)</span>
+            <span>عرض كل الوحدات ({totalUnitsCount} وحدة)</span>
             <ArrowLeft className="w-4 h-4" />
           </Link>
         </div>

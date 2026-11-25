@@ -1,7 +1,7 @@
 'use client';
 
-import Finishing from '@/components/pages/Finishing';
+import FinishDetail from '@/components/pages/FinishDetail';
 
 export default function Page() {
-  return <Finishing />;
+  return <FinishDetail />;
 }

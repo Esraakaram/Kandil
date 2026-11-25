@@ -155,7 +155,7 @@ export const MediaArticle = () => {
       {/* Related Articles */}
       {related.length > 0 && (
         <div className="pt-12 border-t border-gray-100">
-          <h3 className="text-xl font-black text-gray-900 mb-6">مقالات وأخبار ذات صلة</h3>
+          <h3 className="text-xl font-black text-gray-900 mb-6">مقالات وتقارير ذات صلة</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {related.map((item) => (
               <Link

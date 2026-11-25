@@ -18,7 +18,9 @@ import {
   Sparkles,
   ExternalLink,
   Tag,
-  Building
+  Building,
+  FileText,
+  Download
 } from 'lucide-react';
 import { api, getImageUrl } from '@/services/api';
 
@@ -28,6 +30,7 @@ export const UnitDetails = () => {
   const [unit, setUnit] = useState(null);
   const [activeImage, setActiveImage] = useState('');
   const [galleryModalImage, setGalleryModalImage] = useState(null);
+  const [showPdfViewer, setShowPdfViewer] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Inquiry form
@@ -432,6 +435,68 @@ export const UnitDetails = () => {
               </div>
             )}
 
+            {/* PDF Brochure Section */}
+            {(unit.pdfFile || unit.project?.pdfFile) && (
+              <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                  <h3 className="text-xl font-black text-gray-900 flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-[#d61c23]" />
+                    <span>كتالوج وبروشور الوحدة (PDF)</span>
+                  </h3>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-gradient-to-r from-red-50 to-orange-50/40 border border-red-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-[#d61c23] text-white flex items-center justify-center shrink-0 shadow-md">
+                      <FileText className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm text-gray-900">
+                        بروشور {unit.title}
+                      </h4>
+                      <p className="text-xs text-gray-500">
+                        كافة المخططات الهندسية والمواصفات الكاملة
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowPdfViewer(!showPdfViewer)}
+                      className="px-4 py-2.5 rounded-xl bg-white border border-gray-200 hover:bg-gray-50 text-gray-800 text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+                    >
+                      <Eye className="w-4 h-4 text-gray-600" />
+                      <span>{showPdfViewer ? 'إخفاء المعاينة' : 'معاينة سريعة'}</span>
+                    </button>
+
+                    <a
+                      href={getImageUrl(unit.pdfFile || unit.project?.pdfFile)}
+                      download
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-5 py-2.5 rounded-xl bg-[#d61c23] hover:bg-[#b7151b] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md hover:scale-103"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>تحميل البروشور</span>
+                    </a>
+                  </div>
+                </div>
+
+                {showPdfViewer && (
+                  <div className="mt-4 border border-gray-200 rounded-2xl overflow-hidden h-[500px] bg-slate-900">
+                    <iframe
+                      src={`https://docs.google.com/viewer?url=${encodeURIComponent(
+                        getImageUrl(unit.pdfFile || unit.project?.pdfFile)
+                      )}&embedded=true`}
+                      className="w-full h-full border-0"
+                      title="معاينة البروشور"
+                    ></iframe>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Video Walkthrough */}
             {videoEmbed && (
               <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm space-y-4">
@@ -491,10 +556,21 @@ export const UnitDetails = () => {
                     <input
                       type="tel"
                       required
-                      inputMode="tel"
+                      inputMode="numeric"
+                      pattern="[0-9+]*"
                       value={phone}
+                      onKeyDown={(e) => {
+                        if (e.key.length === 1 && !/[0-9+]/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+                          e.preventDefault();
+                        }
+                      }}
                       onChange={(e) => setPhone(e.target.value.replace(/[^0-9+]/g, ''))}
-                      placeholder="01xxxxxxxxx"
+                      onPaste={(e) => {
+                        e.preventDefault();
+                        const paste = (e.clipboardData || window.clipboardData).getData('text');
+                        setPhone((prev) => (prev + paste.replace(/[^0-9+]/g, '')).slice(0, 20));
+                      }}
+                      placeholder="01xxxxxxxxx (أرقام فقط)"
                       className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-gray-800 focus:outline-none focus:border-[#d61c23]"
                       dir="ltr"
                     />

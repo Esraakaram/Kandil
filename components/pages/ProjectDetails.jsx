@@ -697,10 +697,21 @@ export const ProjectDetails = () => {
                     <input
                       type="tel"
                       required
-                      inputMode="tel"
+                      inputMode="numeric"
+                      pattern="[0-9+]*"
                       value={phone}
+                      onKeyDown={(e) => {
+                        if (e.key.length === 1 && !/[0-9+]/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+                          e.preventDefault();
+                        }
+                      }}
                       onChange={(e) => setPhone(e.target.value.replace(/[^0-9+]/g, ''))}
-                      placeholder="01xxxxxxxxx"
+                      onPaste={(e) => {
+                        e.preventDefault();
+                        const paste = (e.clipboardData || window.clipboardData).getData('text');
+                        setPhone((prev) => (prev + paste.replace(/[^0-9+]/g, '')).slice(0, 20));
+                      }}
+                      placeholder="01xxxxxxxxx (أرقام فقط)"
                       className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3.5 py-2.5 text-xs text-gray-800 focus:outline-none focus:border-[#d61c23]"
                       dir="ltr"
                     />

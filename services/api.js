@@ -146,44 +146,69 @@ export function getImageUrl(imageName, entityType = '') {
   return `/uploads/${cleanName}`;
 }
 
+const apiFetch = (url, opts = {}) => fetch(url, { cache: 'no-store', ...opts });
+
 export const api = {
   async getCitiesWithArea() {
-    const res = await fetch(`${API_BASE}/Cities/GetCityWithArea`);
+    const res = await apiFetch(`${API_BASE}/Cities/GetCityWithArea`);
     return res.json();
   },
 
   async getProjectsWithArea() {
-    const res = await fetch(`${API_BASE}/Projects/GetProjectsWithArea`);
+    const res = await apiFetch(`${API_BASE}/Projects/GetProjectsWithArea`);
     return res.json();
   },
 
   async getProjectById(id) {
-    const res = await fetch(`${API_BASE}/Projects/${id}`);
+    const res = await apiFetch(`${API_BASE}/Projects/${id}`);
     if (!res.ok) throw new Error('Project not found');
     return res.json();
   },
 
   async getPortfolioProjects() {
-    const res = await fetch(`${API_BASE}/projects/portfolio`);
+    const res = await apiFetch(`${API_BASE}/projects/portfolio`);
     if (!res.ok) return [];
     return res.json();
   },
 
+  async getUnitsCount() {
+    const res = await apiFetch(`${API_BASE}/Units/count`);
+    if (!res.ok) return { count: 138 };
+    return res.json();
+  },
+
+  async getPaginatedUnits(params = {}) {
+    const query = new URLSearchParams();
+    if (params.page) query.set('page', params.page);
+    if (params.limit) query.set('limit', params.limit);
+    if (params.status && params.status !== 'all') query.set('status', params.status);
+    if (params.area) query.set('area', params.area);
+    if (params.rooms && params.rooms !== 'all') query.set('rooms', params.rooms);
+    if (params.bathrooms && params.bathrooms !== 'all') query.set('bathrooms', params.bathrooms);
+    if (params.maxPrice) query.set('maxPrice', params.maxPrice);
+    if (params.search) query.set('search', params.search);
+    if (params.sort && params.sort !== 'default') query.set('sort', params.sort);
+
+    const res = await apiFetch(`${API_BASE}/Units/GetAllUnits?${query.toString()}`);
+    if (!res.ok) throw new Error('فشل جلب الوحدات');
+    return res.json();
+  },
+
   async getAllUnits() {
-    const res = await fetch(`${API_BASE}/Units/GetAllUnits`);
+    const res = await apiFetch(`${API_BASE}/Units/GetAllUnits`);
     return res.json();
   },
 
   async getFeaturedUnits() {
-    const res = await fetch(`${API_BASE}/Units/GetUnits`);
+    const res = await apiFetch(`${API_BASE}/Units/GetUnits`);
     return res.json();
   },
 
   async getUnitById(id) {
-    const res = await fetch(`${API_BASE}/Units/GetDetailUnits/${id}`);
+    const res = await apiFetch(`${API_BASE}/Units/GetDetailUnits/${id}`);
     if (!res.ok) {
       // fallback to regular unit
-      const fallback = await fetch(`${API_BASE}/Units/${id}`);
+      const fallback = await apiFetch(`${API_BASE}/Units/${id}`);
       if (!fallback.ok) throw new Error('Unit not found');
       return fallback.json();
     }
@@ -191,60 +216,60 @@ export const api = {
   },
 
   async getSliders() {
-    const res = await fetch(`${API_BASE}/Sliders`);
+    const res = await apiFetch(`${API_BASE}/Sliders`);
     return res.json();
   },
 
   async getCoverImages() {
-    const res = await fetch(`${API_BASE}/CoverImage`);
+    const res = await apiFetch(`${API_BASE}/CoverImage`);
     return res.json();
   },
 
   async getSocialLinks() {
-    const res = await fetch(`${API_BASE}/sociallinks`);
+    const res = await apiFetch(`${API_BASE}/sociallinks`);
     return res.json();
   },
 
   async getWhyUs() {
-    const res = await fetch(`${API_BASE}/WhyUs`);
+    const res = await apiFetch(`${API_BASE}/WhyUs`);
     return res.json();
   },
 
   async getMediaCategories() {
-    const res = await fetch(`${API_BASE}/MediaCategory`);
+    const res = await apiFetch(`${API_BASE}/MediaCategory`);
     return res.json();
   },
 
   async getMedia(categoryId) {
     const url = categoryId ? `${API_BASE}/Media?categoryId=${categoryId}` : `${API_BASE}/Media`;
-    const res = await fetch(url);
+    const res = await apiFetch(url);
     return res.json();
   },
 
   async getMediaById(id) {
-    const res = await fetch(`${API_BASE}/Media/${id}`);
+    const res = await apiFetch(`${API_BASE}/Media/${id}`);
     if (!res.ok) throw new Error('Article not found');
     return res.json();
   },
 
   async getFinishCategories() {
-    const res = await fetch(`${API_BASE}/FinishCategory`);
+    const res = await apiFetch(`${API_BASE}/FinishCategory`);
     return res.json();
   },
 
   async getFinishCategoryById(id) {
-    const res = await fetch(`${API_BASE}/FinishCategory/${id}`);
+    const res = await apiFetch(`${API_BASE}/FinishCategory/${id}`);
     if (!res.ok) throw new Error('Category not found');
     return res.json();
   },
 
   async getCommercialProjects() {
-    const res = await fetch(`${API_BASE}/comprojects`);
+    const res = await apiFetch(`${API_BASE}/comprojects`);
     return res.json();
   },
 
   async getCommercialProjectById(id) {
-    const res = await fetch(`${API_BASE}/comprojects/${id}`);
+    const res = await apiFetch(`${API_BASE}/comprojects/${id}`);
     if (!res.ok) throw new Error('Commercial project not found');
     return res.json();
   },

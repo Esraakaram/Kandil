@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { dbService } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(req, { params }) {
   try {
     const resolvedParams = await params;
@@ -38,7 +41,25 @@ export async function GET(req, { params }) {
     }
 
     // 3. Units
+    if (fullPath === 'units/count') {
+      const count = await dbService.getUnitsCount();
+      return NextResponse.json({ count });
+    }
     if (fullPath === 'units/getallunits') {
+      if (searchParams.has('page')) {
+        const paginated = await dbService.getPaginatedUnits({
+          page: searchParams.get('page'),
+          limit: searchParams.get('limit') || 9,
+          status: searchParams.get('status'),
+          area: searchParams.get('area'),
+          rooms: searchParams.get('rooms'),
+          bathrooms: searchParams.get('bathrooms'),
+          maxPrice: searchParams.get('maxPrice'),
+          search: searchParams.get('search'),
+          sort: searchParams.get('sort')
+        });
+        return NextResponse.json(paginated);
+      }
       const data = await dbService.getAllUnits();
       return NextResponse.json(data);
     }

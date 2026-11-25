@@ -428,212 +428,273 @@ const PdfUploader = ({ label = 'ملف البروشور / PDF الخاص بال�
 };
 
 const RichTextEditor = ({ label = 'محتوى المقال', value = '', onChange }) => {
-  const editorRef = useRef(null);
-  const [showHtml, setShowHtml] = useState(false);
+  const textareaRef = useRef(null);
+  const [activeView, setActiveView] = useState('editor'); // 'editor', 'preview', 'html'
 
-  useEffect(() => {
-    if (editorRef.current && !showHtml) {
-      if (editorRef.current.innerHTML !== (value || '')) {
-        editorRef.current.innerHTML = value || '';
-      }
-    }
-  }, [value, showHtml]);
+  // Insert helper tags around current selection or at cursor position
+  const insertTag = (openTag, closeTag = '', defaultText = '') => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
 
-  const exec = (command, val = null) => {
-    document.execCommand(command, false, val);
-    if (editorRef.current) {
-      onChange(editorRef.current.innerHTML);
-    }
+    const start = textarea.selectionStart || 0;
+    const end = textarea.selectionEnd || 0;
+    const currentVal = value || '';
+    const selectedText = currentVal.substring(start, end) || defaultText;
+
+    const replacement = `${openTag}${selectedText}${closeTag}`;
+    const newVal = currentVal.substring(0, start) + replacement + currentVal.substring(end);
+    onChange(newVal);
+
+    setTimeout(() => {
+      textarea.focus();
+      const cursorTarget = start + openTag.length + selectedText.length;
+      textarea.setSelectionRange(cursorTarget, cursorTarget);
+    }, 50);
   };
 
-  const handleInput = () => {
-    if (editorRef.current) {
-      onChange(editorRef.current.innerHTML);
-    }
+  // Auto format: turns plain text / pasted paragraphs into clean semantic HTML
+  const handleAutoFormatParagraphs = () => {
+    if (!value) return;
+    const raw = String(value);
+
+    // If it's already well-formatted HTML with multiple paragraph tags, confirm re-formatting
+    let textToProcess = raw
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<script[\s\S]*?<\/script>/gi, '');
+
+    // Split by two or more newlines or existing loose tags
+    const chunks = textToProcess
+      .split(/\r?\n\r?\n+/)
+      .map((c) => c.trim())
+      .filter(Boolean);
+
+    const formatted = chunks
+      .map((chunk) => {
+        // If it starts with h2, h3, ul, ol, blockquote, leave it as is
+        if (/^<(h[1-6]|ul|ol|blockquote|div|table)/i.test(chunk)) {
+          return chunk;
+        }
+        // Remove surrounding bare <p></p> to normalize
+        const stripped = chunk.replace(/^<p[^>]*>/i, '').replace(/<\/p>$/i, '').trim();
+        return `<p className="mb-4 leading-relaxed text-gray-700">${stripped.replace(/\r?\n/g, '<br/>')}</p>`;
+      })
+      .join('\n\n');
+
+    onChange(formatted);
   };
 
-  const handlePaste = (e) => {
-    e.preventDefault();
-    const htmlData = e.clipboardData.getData('text/html');
-    const textData = e.clipboardData.getData('text/plain');
-
-    if (htmlData) {
-      let clean = htmlData
-        .replace(/<!--[\s\S]*?-->/g, '')
-        .replace(/<style[\s\S]*?<\/style>/gi, '')
-        .replace(/class="[^"]*"/gi, '')
-        .replace(/style="[^"]*"/gi, '');
-      document.execCommand('insertHTML', false, clean);
-    } else if (textData) {
-      const paragraphs = textData
-        .split(/\r?\n\r?\n/)
-        .map((p) => p.trim())
-        .filter(Boolean)
-        .map((p) => `<p>${p.replace(/\r?\n/g, '<br/>')}</p>`)
-        .join('');
-      document.execCommand('insertHTML', false, paragraphs || textData);
-    }
-    if (editorRef.current) {
-      onChange(editorRef.current.innerHTML);
+  const handleAddLink = () => {
+    const url = prompt('أدخل رابط الموقع (URL):', 'https://');
+    if (url && url !== 'https://') {
+      insertTag(`<a href="${url}" target="_blank" rel="noreferrer" className="text-[#d61c23] hover:underline font-bold">`, '</a>', 'اضغط هنا للزيارة');
     }
   };
 
   return (
-    <div className="space-y-1.5">
-      <div className="flex items-center justify-between">
+    <div className="space-y-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <label className="block text-xs font-bold text-gray-700">{label}</label>
-        <button
-          type="button"
-          onClick={() => setShowHtml(!showHtml)}
-          className="text-[11px] font-bold text-gray-500 hover:text-[#d61c23] transition flex items-center gap-1"
-        >
-          {showHtml ? 'عرض التحرير المرئي' : 'تعديل كود HTML'}
-        </button>
+
+        {/* View Switcher Tabs */}
+        <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={() => setActiveView('editor')}
+            className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+              activeView === 'editor'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500 hover:text-gray-900'
+            }`}
+          >
+            المحرر والتنسيق
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveView('preview')}
+            className={`px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
+              activeView === 'preview'
+                ? 'bg-[#d61c23] text-white shadow-sm'
+                : 'text-gray-500 hover:text-gray-900'
+            }`}
+          >
+            <span>معاينة حية للمقال</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveView('html')}
+            className={`px-3 py-1 rounded-lg text-xs font-bold transition font-mono ${
+              activeView === 'html'
+                ? 'bg-slate-800 text-white shadow-sm'
+                : 'text-gray-500 hover:text-gray-900'
+            }`}
+          >
+            كود HTML
+          </button>
+        </div>
       </div>
 
-      <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm focus-within:border-[#d61c23]">
-        {!showHtml && (
-          <div className="flex flex-wrap items-center gap-1 p-2 bg-gray-50 border-b border-gray-200 text-gray-700">
-            <select
-              onChange={(e) => {
-                if (e.target.value) exec('formatBlock', e.target.value);
-                e.target.value = '';
-              }}
-              className="text-xs font-bold bg-white border border-gray-200 rounded-lg px-2 py-1 focus:outline-none"
-              defaultValue=""
-            >
-              <option value="" disabled>تنسيق الفقرة...</option>
-              <option value="<h2>">عنوان رئيسي (H2)</option>
-              <option value="<h3>">عنوان فرعي (H3)</option>
-              <option value="<h4>">عنوان جانبي (H4)</option>
-              <option value="<p>">نص عادي (فقرة)</option>
-            </select>
+      <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm focus-within:border-[#d61c23] transition">
+        {/* Formatting Toolbar */}
+        {activeView !== 'preview' && (
+          <div className="p-2.5 bg-gray-50 border-b border-gray-200 flex flex-wrap items-center gap-1.5 text-gray-700">
+            {/* Heading Shortcuts */}
+            <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-gray-200 shadow-xs">
+              <button
+                type="button"
+                onClick={() => insertTag('<h2 className="text-xl sm:text-2xl font-black text-gray-900 mt-6 mb-3">', '</h2>', 'عنوان رئيسي')}
+                className="px-2 py-1 hover:bg-gray-100 rounded text-xs font-black text-gray-800"
+                title="عنوان رئيسي (H2)"
+              >
+                H2
+              </button>
+              <button
+                type="button"
+                onClick={() => insertTag('<h3 className="text-lg sm:text-xl font-bold text-gray-800 mt-4 mb-2">', '</h3>', 'عنوان فرعي')}
+                className="px-2 py-1 hover:bg-gray-100 rounded text-xs font-bold text-gray-700"
+                title="عنوان فرعي (H3)"
+              >
+                H3
+              </button>
+            </div>
 
-            <span className="w-px h-5 bg-gray-200 mx-1"></span>
+            <span className="w-px h-5 bg-gray-200 mx-0.5"></span>
 
-            <button
-              type="button"
-              onClick={() => exec('bold')}
-              className="p-1.5 hover:bg-gray-200 rounded text-xs font-black w-7 h-7 flex items-center justify-center"
-              title="غامق (Bold)"
-            >
-              B
-            </button>
-            <button
-              type="button"
-              onClick={() => exec('italic')}
-              className="p-1.5 hover:bg-gray-200 rounded text-xs italic font-serif w-7 h-7 flex items-center justify-center"
-              title="مائل (Italic)"
-            >
-              I
-            </button>
-            <button
-              type="button"
-              onClick={() => exec('underline')}
-              className="p-1.5 hover:bg-gray-200 rounded text-xs underline font-bold w-7 h-7 flex items-center justify-center"
-              title="تسطير (Underline)"
-            >
-              U
-            </button>
+            {/* Inline Formatting */}
+            <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-gray-200 shadow-xs">
+              <button
+                type="button"
+                onClick={() => insertTag('<strong>', '</strong>', 'نص عريض')}
+                className="w-7 h-7 hover:bg-gray-100 rounded text-xs font-black flex items-center justify-center text-gray-900"
+                title="غامق (Bold)"
+              >
+                B
+              </button>
+              <button
+                type="button"
+                onClick={() => insertTag('<em>', '</em>', 'نص مائل')}
+                className="w-7 h-7 hover:bg-gray-100 rounded text-xs italic font-serif flex items-center justify-center text-gray-700"
+                title="مائل (Italic)"
+              >
+                I
+              </button>
+              <button
+                type="button"
+                onClick={() => insertTag('<mark className="bg-amber-100 text-amber-900 font-bold px-1.5 py-0.5 rounded">', '</mark>', 'نص مميز')}
+                className="px-2 py-1 hover:bg-amber-50 rounded text-xs font-bold text-amber-800"
+                title="تمييز النص بلون ملفت"
+              >
+                تمييز
+              </button>
+            </div>
 
-            <span className="w-px h-5 bg-gray-200 mx-1"></span>
+            <span className="w-px h-5 bg-gray-200 mx-0.5"></span>
 
-            <button
-              type="button"
-              onClick={() => exec('insertUnorderedList')}
-              className="p-1.5 hover:bg-gray-200 rounded text-xs font-bold px-2 h-7 flex items-center justify-center"
-              title="قائمة نقطية"
-            >
-              • قائمة
-            </button>
-            <button
-              type="button"
-              onClick={() => exec('insertOrderedList')}
-              className="p-1.5 hover:bg-gray-200 rounded text-xs font-bold px-2 h-7 flex items-center justify-center"
-              title="قائمة رقمية"
-            >
-              1. قائمة
-            </button>
+            {/* Block & Lists */}
+            <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-gray-200 shadow-xs">
+              <button
+                type="button"
+                onClick={() => insertTag('<ul className="list-disc list-inside space-y-2 my-4 text-gray-700 font-medium">\n  <li>', '</li>\n  <li>عنصر ثانٍ</li>\n</ul>', 'عنصر في القائمة')}
+                className="px-2.5 py-1 hover:bg-gray-100 rounded text-xs font-bold flex items-center gap-1"
+                title="قائمة نقطية"
+              >
+                • قائمة
+              </button>
+              <button
+                type="button"
+                onClick={() => insertTag('<ol className="list-decimal list-inside space-y-2 my-4 text-gray-700 font-medium">\n  <li>', '</li>\n  <li>خطوة ثانية</li>\n</ol>', 'خطوة أولى')}
+                className="px-2.5 py-1 hover:bg-gray-100 rounded text-xs font-bold flex items-center gap-1"
+                title="قائمة مرقمة"
+              >
+                1. مرقمة
+              </button>
+              <button
+                type="button"
+                onClick={() => insertTag('<blockquote className="border-r-4 border-[#d61c23] bg-red-50/60 p-4 rounded-r-xl my-4 text-gray-800 font-semibold">\n  "', '"\n</blockquote>', 'اقتباس أو معلومة هامة عن المشروع')}
+                className="px-2.5 py-1 hover:bg-gray-100 rounded text-xs font-bold"
+                title="اقتباس مميز"
+              >
+                " اقتباس
+              </button>
+              <button
+                type="button"
+                onClick={handleAddLink}
+                className="px-2.5 py-1 hover:bg-gray-100 rounded text-xs font-bold text-blue-600"
+                title="إضافة رابط لموقع خارجي أو صفحة"
+              >
+                🔗 رابط
+              </button>
+              <button
+                type="button"
+                onClick={() => insertTag('\n<hr className="my-6 border-gray-200" />\n')}
+                className="px-2 py-1 hover:bg-gray-100 rounded text-xs font-bold text-gray-500"
+                title="خط فاصل بين الأقسام"
+              >
+                ― فاصل
+              </button>
+            </div>
 
-            <span className="w-px h-5 bg-gray-200 mx-1"></span>
-
+            {/* Magic Auto-Formatter Button */}
             <button
               type="button"
-              onClick={() => exec('justifyRight')}
-              className="p-1.5 hover:bg-gray-200 rounded text-xs font-bold px-1.5 h-7 flex items-center justify-center"
-              title="محاذاة لليمين"
+              onClick={handleAutoFormatParagraphs}
+              className="mr-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200 shadow-xs transition"
+              title="تنسيق تلقائي للنص المنسوخ إلى فقرات مرتبة ونظيفة"
             >
-              يمين
-            </button>
-            <button
-              type="button"
-              onClick={() => exec('justifyCenter')}
-              className="p-1.5 hover:bg-gray-200 rounded text-xs font-bold px-1.5 h-7 flex items-center justify-center"
-              title="توسيط"
-            >
-              وسط
-            </button>
-            <button
-              type="button"
-              onClick={() => exec('justifyLeft')}
-              className="p-1.5 hover:bg-gray-200 rounded text-xs font-bold px-1.5 h-7 flex items-center justify-center"
-              title="محاذاة لليسار"
-            >
-              يسار
-            </button>
-
-            <span className="w-px h-5 bg-gray-200 mx-1"></span>
-
-            <button
-              type="button"
-              onClick={() => exec('formatBlock', '<blockquote>')}
-              className="p-1.5 hover:bg-gray-200 rounded text-xs font-bold px-2 h-7 flex items-center justify-center"
-              title="اقتباس"
-            >
-              " اقتباس
-            </button>
-            <button
-              type="button"
-              onClick={() => exec('insertHorizontalRule')}
-              className="p-1.5 hover:bg-gray-200 rounded text-xs font-bold px-2 h-7 flex items-center justify-center"
-              title="خط فاصل"
-            >
-              ― فاصل
-            </button>
-
-            <button
-              type="button"
-              onClick={() => exec('removeFormat')}
-              className="p-1.5 hover:bg-red-50 hover:text-red-600 rounded text-xs font-bold px-2 h-7 flex items-center justify-center mr-auto"
-              title="إزالة التنسيق"
-            >
-              مسح التنسيق
+              <span>✨ تنسيق تلقائي للفقرات</span>
             </button>
           </div>
         )}
 
-        {showHtml ? (
+        {/* View 1: Main Textarea Editor */}
+        {activeView === 'editor' && (
+          <textarea
+            ref={textareaRef}
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+            rows="12"
+            dir="rtl"
+            placeholder="اكتب أو الصق نص المقال هنا... يمكنك استخدام أزرار شريط الأدوات أعلاه لتحديد العناوين، القوائم، أو الضغط على (تنسيق تلقائي للفقرات) لتنظيم النص تلقائياً."
+            className="w-full p-4 sm:p-5 text-xs sm:text-sm text-gray-800 leading-loose bg-white focus:outline-none resize-y min-h-[260px]"
+          ></textarea>
+        )}
+
+        {/* View 2: Live Preview Tab */}
+        {activeView === 'preview' && (
+          <div className="p-6 sm:p-8 bg-gray-50/70 min-h-[300px] max-h-[550px] overflow-y-auto" dir="rtl">
+            <div className="max-w-2xl mx-auto bg-white p-6 sm:p-8 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+              <span className="text-[11px] font-bold text-[#d61c23] uppercase tracking-wider block border-b border-gray-100 pb-2">
+                معاينة كيفية ظهور المقال على الموقع للزوار
+              </span>
+              {value ? (
+                <div
+                  className="prose prose-sm sm:prose-base max-w-none text-gray-800 leading-relaxed font-sans text-right prose-headings:font-black prose-headings:text-gray-900 prose-p:leading-loose prose-a:text-[#d61c23] prose-strong:text-gray-900 prose-blockquote:border-r-4 prose-blockquote:border-[#d61c23] prose-blockquote:bg-red-50/50 prose-blockquote:p-4 prose-blockquote:rounded-r-xl"
+                  dangerouslySetInnerHTML={{ __html: value }}
+                />
+              ) : (
+                <p className="text-gray-400 text-xs text-center py-10">
+                  لم يتم إدخال محتوى حتى الآن للمعاينة.
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* View 3: Raw HTML Code Tab */}
+        {activeView === 'html' && (
           <textarea
             value={value || ''}
             onChange={(e) => onChange(e.target.value)}
-            rows="10"
-            className="w-full p-4 font-mono text-xs text-gray-800 bg-gray-50 focus:outline-none"
+            rows="12"
             dir="ltr"
-            placeholder="<p>اكتب أو الصق كود HTML هنا...</p>"
+            placeholder="<p>اكتب كود HTML المباشر هنا...</p>"
+            className="w-full p-4 font-mono text-xs text-emerald-400 bg-slate-900 focus:outline-none resize-y min-h-[260px]"
           ></textarea>
-        ) : (
-          <div
-            ref={editorRef}
-            contentEditable
-            onInput={handleInput}
-            onPaste={handlePaste}
-            className="min-h-[220px] max-h-[480px] overflow-y-auto p-4 text-xs sm:text-sm text-gray-800 focus:outline-none leading-relaxed prose prose-sm max-w-none"
-            dir="rtl"
-          ></div>
         )}
       </div>
+
       <p className="text-[11px] text-gray-400">
-        يمكنك نسخ المقال من Word أو المواقع ولصقه مباشرة، واستخدام الأدوات أعلاه لتحديد العناوين والقوائم والتنسيق.
+        💡 نصيحة: يمكنك لصق نص المقال مباشرة من Word أو أي ملف، ثم الضغط على <strong className="text-emerald-700">تنسيق تلقائي للفقرات</strong> لتحويله فوراً لفقرات منسقة بأناقة، والضغط على <strong className="text-[#d61c23]">معاينة حية للمقال</strong> لرؤية النتيجة فوراً.
       </p>
     </div>
   );
@@ -861,6 +922,7 @@ export const Dashboard = () => {
       latitude: u.latitude || null,
       longitude: u.longitude || null,
       detailsCoverImage: u.detailsCoverImage || '',
+      pdfFile: u.pdfFile || '',
       advantageUnits: u.advantageUnits || '',
       serviceUnits: u.serviceUnits || '',
       isShown: true
@@ -2259,6 +2321,7 @@ export const Dashboard = () => {
                         projectId: projects?.[0]?.id || null,
                         nameLocation: 'القاهرة الجديدة',
                         imageName: '',
+                        pdfFile: '',
                         description: '',
                         isShown: true
                       });
@@ -3450,6 +3513,14 @@ export const Dashboard = () => {
                         />
                       </div>
 
+                      <div className="sm:col-span-2">
+                        <PdfUploader
+                          label="ملف بروشور الوحدة / الكتالوج PDF (رفع ملف)"
+                          value={editingUnit.pdfFile || ''}
+                          onChange={(url) => setEditingUnit({ ...editingUnit, pdfFile: url })}
+                        />
+                      </div>
+
                       <div>
                         <label className="block text-xs font-bold text-gray-700 mb-1">خط العرض (Latitude - خريطة Google)</label>
                         <input
@@ -3660,6 +3731,7 @@ export const Dashboard = () => {
                           latitude: null,
                           longitude: null,
                           detailsCoverImage: '',
+                          pdfFile: '',
                           advantageUnits: '',
                           serviceUnits: '',
                           isShown: true
@@ -4324,19 +4396,37 @@ export const Dashboard = () => {
                         key={cov.id}
                         className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col justify-between"
                       >
-                        <div className="relative h-44 bg-slate-900">
-                          <img
-                            src={getImageUrl(cov.imageName)}
-                            alt={cov.pageName}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.target.src = '/assets/Images/whyus/whyus-philosophy.jpg';
-                            }}
-                          />
-                          <div className="absolute top-3 right-3 bg-slate-900/90 backdrop-blur text-white px-3 py-1 rounded-full text-xs font-bold">
+                        <div className="relative h-44 bg-gradient-to-br from-slate-900 to-slate-800 overflow-hidden">
+                          {cov.imageName ? (
+                            cov.imageType === 'video' && (cov.imageName.includes('.mp4') || cov.imageName.includes('youtu')) ? (
+                              <div className="w-full h-full flex flex-col items-center justify-center bg-black text-white p-4 text-center">
+                                <Play className="w-8 h-8 text-[#d61c23] mb-2 fill-current" />
+                                <span className="text-xs font-bold">فيديو كفر مخصص ({cov.pageName})</span>
+                                <span className="text-[10px] text-gray-400 font-mono truncate max-w-xs mt-1">{cov.imageName}</span>
+                              </div>
+                            ) : (
+                              <img
+                                src={getImageUrl(cov.imageName)}
+                                alt={cov.pageName}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                }}
+                              />
+                            )
+                          ) : null}
+
+                          {/* Fallback branded card if image missing or loading */}
+                          <div className="absolute inset-0 -z-0 flex flex-col items-center justify-center p-4 text-center bg-gradient-to-br from-[#1a1c23] to-[#26070a] text-white">
+                            <Layers className="w-8 h-8 text-white/30 mb-2" />
+                            <span className="text-xs font-bold text-white/90">كفر صفحة: {cov.pageName}</span>
+                            <span className="text-[10px] text-white/50 mt-1">اضغط "تعديل" بالأسفل لرفع صورة الكفر</span>
+                          </div>
+
+                          <div className="absolute top-3 right-3 bg-slate-900/90 backdrop-blur text-white px-3 py-1 rounded-full text-xs font-bold shadow-md z-10">
                             {cov.pageName}
                           </div>
-                          <div className="absolute bottom-3 left-3 bg-black/60 text-white px-2 py-0.5 rounded text-[10px] font-mono">
+                          <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur text-white px-2 py-0.5 rounded text-[10px] font-mono z-10">
                             {cov.imageType === 'video' ? 'فيديو' : 'صورة'}
                           </div>
                         </div>
@@ -4410,11 +4500,13 @@ export const Dashboard = () => {
                         }
                         className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-bold text-gray-800 focus:outline-none focus:border-[#d61c23]"
                       >
-                        {mediaCategories.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.title}
-                          </option>
-                        ))}
+                        {mediaCategories
+                          .filter((c) => !/(?:أخبار|اخبار|news)/i.test(c.title || ''))
+                          .map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.title}
+                            </option>
+                          ))}
                       </select>
                     </div>
 
@@ -4532,11 +4624,13 @@ export const Dashboard = () => {
                         className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-gray-700 focus:outline-none"
                       >
                         <option value="ALL">جميع فئات الميديا ({articles.length})</option>
-                        {mediaCategories.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.title}
-                          </option>
-                        ))}
+                        {mediaCategories
+                          .filter((c) => !/(?:أخبار|اخبار|news)/i.test(c.title || ''))
+                          .map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.title}
+                            </option>
+                          ))}
                       </select>
 
                       <button
@@ -5099,24 +5193,38 @@ export const Dashboard = () => {
                   <div>
                     <label className="block text-xs font-bold text-gray-700 mb-1">الخط الساخن</label>
                     <input
-                      type="text"
+                      type="tel"
+                      inputMode="numeric"
                       value={companySettings.hotline}
+                      onKeyDown={(e) => {
+                        if (e.key.length === 1 && !/[0-9+]/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+                          e.preventDefault();
+                        }
+                      }}
                       onChange={(e) =>
-                        setCompanySettings({ ...companySettings, hotline: e.target.value })
+                        setCompanySettings({ ...companySettings, hotline: e.target.value.replace(/[^0-9+]/g, '') })
                       }
                       className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-gray-800 focus:outline-none focus:border-[#d61c23]"
+                      dir="ltr"
                     />
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-gray-700 mb-1">رقم الواتساب</label>
                     <input
-                      type="text"
+                      type="tel"
+                      inputMode="numeric"
                       value={companySettings.whatsapp}
+                      onKeyDown={(e) => {
+                        if (e.key.length === 1 && !/[0-9+]/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+                          e.preventDefault();
+                        }
+                      }}
                       onChange={(e) =>
-                        setCompanySettings({ ...companySettings, whatsapp: e.target.value })
+                        setCompanySettings({ ...companySettings, whatsapp: e.target.value.replace(/[^0-9+]/g, '') })
                       }
                       className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-gray-800 focus:outline-none focus:border-[#d61c23]"
+                      dir="ltr"
                     />
                   </div>
 

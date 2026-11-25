@@ -20,7 +20,12 @@ import { api, getImageUrl } from '@/services/api';
 
 
 export const Units = () => {
-  const [units, setUnits] = useState([]);
+  const [paginatedData, setPaginatedData] = useState({
+    units: [],
+    totalCount: 0,
+    page: 1,
+    totalPages: 1
+  });
   const [citiesData, setCitiesData] = useState([]);
   const [coverImage, setCoverImage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -32,7 +37,6 @@ export const Units = () => {
   const [roomsFilter, setRoomsFilter] = useState('all');
   const [bathroomsFilter, setBathroomsFilter] = useState('all');
   const [maxPrice, setMaxPrice] = useState(3000000);
-  const [minArea, setMinArea] = useState(0);
   const [sortBy, setSortBy] = useState('default');
   const [viewMode, setViewMode] = useState('grid');
 
@@ -40,81 +44,62 @@ export const Units = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
 
+  // 1. Fetch auxiliary data (cities & cover) independently on mount
   useEffect(() => {
-    Promise.all([api.getAllUnits(), api.getCitiesWithArea(), api.getCoverImages()])
-      .then(([unitsRes, citiesRes, coversRes]) => {
-        setUnits(unitsRes);
-        setCitiesData(citiesRes);
-        if (Array.isArray(coversRes)) {
-          const cover = coversRes.find((c) => c.pageName && (c.pageName.includes('عروض') || c.pageName.includes('وحدات')));
-          if (cover && cover.imageName) {
-            setCoverImage(getImageUrl(cover.imageName));
-          }
+    Promise.all([
+      api.getCitiesWithArea().catch(() => []),
+      api.getCoverImages().catch(() => [])
+    ]).then(([citiesRes, coversRes]) => {
+      setCitiesData(citiesRes || []);
+      if (Array.isArray(coversRes)) {
+        const cover = coversRes.find((c) => c.pageName && (c.pageName.includes('عروض') || c.pageName.includes('وحدات')));
+        if (cover && cover.imageName) {
+          setCoverImage(getImageUrl(cover.imageName));
         }
-        setLoading(false);
+      }
+    });
+  }, []);
+
+  // 2. Fast Paginated Fetch - loads only 9 units per page instantly
+  useEffect(() => {
+    let isCancelled = false;
+    setLoading(true);
+
+    api.getPaginatedUnits({
+      page: currentPage,
+      limit: itemsPerPage,
+      status: statusFilter,
+      area: selectedArea,
+      rooms: roomsFilter,
+      bathrooms: bathroomsFilter,
+      maxPrice,
+      search: searchTerm,
+      sort: sortBy
+    })
+      .then((res) => {
+        if (!isCancelled && res) {
+          setPaginatedData({
+            units: Array.isArray(res.units) ? res.units : [],
+            totalCount: res.totalCount ?? 0,
+            page: res.page ?? currentPage,
+            totalPages: res.totalPages ?? 1
+          });
+          setLoading(false);
+        }
       })
       .catch((err) => {
         console.error('Error fetching units:', err);
-        setLoading(false);
+        if (!isCancelled) setLoading(false);
       });
-  }, []);
 
-  // Filter & sort logic
-  const filteredUnits = useMemo(() => {
-    return units
-      .filter((unit) => {
-        // Keyword
-        if (searchTerm) {
-          const matchTitle = unit.title.toLowerCase().includes(searchTerm.toLowerCase());
-          const matchLoc = (unit.nameLocation || '').toLowerCase().includes(searchTerm.toLowerCase());
-          if (!matchTitle && !matchLoc) return false;
-        }
+    return () => {
+      isCancelled = true;
+    };
+  }, [currentPage, statusFilter, selectedArea, roomsFilter, bathroomsFilter, maxPrice, searchTerm, sortBy]);
 
-        // Area
-        if (selectedArea && unit.nameLocation && !unit.nameLocation.includes(selectedArea)) {
-          return false;
-        }
-
-        // Status
-        if (statusFilter !== 'all') {
-          if (statusFilter === 'Sold' && unit.status !== 'Sold') return false;
-          if (statusFilter === 'Available' && unit.status === 'Sold') return false;
-        }
-
-        // Rooms
-        if (roomsFilter !== 'all') {
-          if (unit.numberRoom !== Number(roomsFilter)) return false;
-        }
-
-        // Bathrooms
-        if (bathroomsFilter !== 'all') {
-          if (unit.numberBathroom !== Number(bathroomsFilter)) return false;
-        }
-
-        // Price
-        if (unit.price > 0 && unit.price > maxPrice) {
-          return false;
-        }
-
-        // Area size
-        if (unit.area < minArea) {
-          return false;
-        }
-
-        return true;
-      })
-      .sort((a, b) => {
-        if (sortBy === 'price-asc') return a.price - b.price;
-        if (sortBy === 'price-desc') return b.price - a.price;
-        if (sortBy === 'area-asc') return a.area - b.area;
-        if (sortBy === 'area-desc') return b.area - a.area;
-        return 0;
-      });
-  }, [units, searchTerm, selectedArea, statusFilter, roomsFilter, bathroomsFilter, maxPrice, minArea, sortBy]);
-
-  // Pagination slice
-  const totalPages = Math.ceil(filteredUnits.length / itemsPerPage);
-  const currentUnits = filteredUnits.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const currentUnits = paginatedData.units;
+  const totalCount = paginatedData.totalCount;
+  const totalPages = paginatedData.totalPages;
 
   const resetFilters = () => {
     setSearchTerm('');
@@ -123,12 +108,20 @@ export const Units = () => {
     setRoomsFilter('all');
     setBathroomsFilter('all');
     setMaxPrice(3000000);
-    setMinArea(0);
     setSortBy('default');
     setCurrentPage(1);
   };
 
-  const allAreaNames = Array.from(new Set(units.map((u) => u.nameLocation).filter(Boolean)));
+  const allAreaNames = Array.from(
+    new Set([
+      'النرجس الجديدة',
+      'بيت الوطن',
+      'شمال الرحاب',
+      'النورث هاوس',
+      'الأندلس',
+      ...citiesData.flatMap((c) => (c.areas || []).map((a) => a.name))
+    ])
+  ).filter(Boolean);
 
   return (
     <div className="space-y-10 pb-16">
@@ -256,11 +249,11 @@ export const Units = () => {
                 className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-800 focus:outline-none focus:border-[#d61c23]"
               >
                 <option value="">كافة المناطق</option>
-                <option value="النرجس الجديدة">النرجس الجديدة</option>
-                <option value="بيت الوطن">بيت الوطن</option>
-                <option value="شمال الرحاب">شمال الرحاب</option>
-                <option value="النورث هاوس">النورث هاوس</option>
-                <option value="الأندلس">الأندلس</option>
+                {allAreaNames.map((areaName) => (
+                  <option key={areaName} value={areaName}>
+                    {areaName}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -340,7 +333,7 @@ export const Units = () => {
             {/* Control Bar: Count, Sort, Grid/List */}
             <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
               <span className="text-sm font-bold text-gray-700">
-                إجمالي النتائج: <strong className="text-[#d61c23] font-black">{loading ? '...' : filteredUnits.length}</strong> وحدة
+                إجمالي النتائج: <strong className="text-[#d61c23] font-black">{loading ? '...' : totalCount}</strong> وحدة
               </span>
 
               <div className="flex items-center gap-4">
@@ -594,33 +587,61 @@ export const Units = () => {
 
             {/* Pagination Controls */}
             {!loading && totalPages > 1 && (
-              <div className="flex justify-center items-center gap-2 pt-8">
+              <div className="flex flex-wrap justify-center items-center gap-1.5 pt-8">
                 <button
                   disabled={currentPage === 1}
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  onClick={() => {
+                    setCurrentPage((p) => Math.max(1, p - 1));
+                    window.scrollTo({ top: 350, behavior: 'smooth' });
+                  }}
                   className="p-2 rounded-lg border border-gray-200 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50"
                   aria-label="الصفحة السابقة"
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>
 
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`w-9 h-9 rounded-lg font-bold text-xs transition-colors ${
-                      page === currentPage
-                        ? 'bg-[#d61c23] text-white'
-                        : 'border border-gray-200 text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
+                {(() => {
+                  let range = [];
+                  if (totalPages <= 7) {
+                    range = Array.from({ length: totalPages }, (_, i) => i + 1);
+                  } else if (currentPage <= 3) {
+                    range = [1, 2, 3, 4, '...', totalPages];
+                  } else if (currentPage >= totalPages - 2) {
+                    range = [1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+                  } else {
+                    range = [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages];
+                  }
+
+                  return range.map((page, idx) =>
+                    page === '...' ? (
+                      <span key={`dots-${idx}`} className="px-2 text-gray-400 font-bold text-xs select-none">
+                        ...
+                      </span>
+                    ) : (
+                      <button
+                        key={page}
+                        onClick={() => {
+                          setCurrentPage(page);
+                          window.scrollTo({ top: 350, behavior: 'smooth' });
+                        }}
+                        className={`w-9 h-9 rounded-lg font-bold text-xs transition-colors ${
+                          page === currentPage
+                            ? 'bg-[#d61c23] text-white shadow'
+                            : 'border border-gray-200 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  );
+                })()}
 
                 <button
                   disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  onClick={() => {
+                    setCurrentPage((p) => Math.min(totalPages, p + 1));
+                    window.scrollTo({ top: 350, behavior: 'smooth' });
+                  }}
                   className="p-2 rounded-lg border border-gray-200 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50"
                   aria-label="الصفحة التالية"
                 >
