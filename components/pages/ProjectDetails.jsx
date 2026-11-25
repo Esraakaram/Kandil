@@ -705,6 +705,9 @@ export const ProjectDetails = () => {
                           e.preventDefault();
                         }
                       }}
+                      onInput={(e) => {
+                        e.target.value = e.target.value.replace(/[^0-9+]/g, '');
+                      }}
                       onChange={(e) => setPhone(e.target.value.replace(/[^0-9+]/g, ''))}
                       onPaste={(e) => {
                         e.preventDefault();

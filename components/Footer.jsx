@@ -48,6 +48,23 @@ export const Footer = () => {
         }
       })
       .catch(() => {});
+
+    const handleSettingsUpdate = (e) => {
+      if (e.detail) {
+        setSocialData((prev) => ({
+          ...prev,
+          hotline: e.detail.hotline || prev.hotline,
+          address: e.detail.address || prev.address,
+          email: e.detail.email || prev.email,
+          facebook: e.detail.facebook || prev.facebook,
+          instagram: e.detail.instagram || prev.instagram,
+          youtube: e.detail.youtube || prev.youtube,
+          whatsapp: e.detail.whatsapp || prev.whatsapp
+        }));
+      }
+    };
+    window.addEventListener('company-settings-updated', handleSettingsUpdate);
+    return () => window.removeEventListener('company-settings-updated', handleSettingsUpdate);
   }, []);
 
   const handleSubscribe = (e) => {

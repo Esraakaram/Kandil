@@ -56,6 +56,22 @@ export const Header = () => {
         }
       })
       .catch(() => {});
+
+    const handleSettingsUpdate = (e) => {
+      if (e.detail) {
+        setSocialData((prev) => ({
+          ...prev,
+          hotline: e.detail.hotline || prev.hotline,
+          address: e.detail.address || prev.address,
+          facebook: e.detail.facebook || prev.facebook,
+          instagram: e.detail.instagram || prev.instagram,
+          youtube: e.detail.youtube || prev.youtube,
+          whatsapp: e.detail.whatsapp || prev.whatsapp
+        }));
+      }
+    };
+    window.addEventListener('company-settings-updated', handleSettingsUpdate);
+    return () => window.removeEventListener('company-settings-updated', handleSettingsUpdate);
   }, []);
 
   // Close mobile drawer on route change
@@ -267,13 +283,14 @@ export const Header = () => {
           </nav>
 
           {/* Hotline CTA & Mobile Toggle */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <a
-              href="tel:19473"
-              className="hidden sm:inline-flex items-center gap-2 bg-[#d61c23] hover:bg-[#b7151b] text-white font-bold text-sm px-4 py-2.5 rounded-full shadow-md transition-all hover:scale-103"
+              href={`tel:${socialData.hotline || '19473'}`}
+              className="inline-flex items-center gap-1.5 sm:gap-2 bg-[#d61c23] hover:bg-[#b7151b] text-white font-bold text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 rounded-full shadow-md transition-all hover:scale-103 cursor-pointer"
+              title={`اتصل بنا ${socialData.hotline || '19473'}`}
             >
-              <Phone className="w-4 h-4 text-[#f59e0b] animate-pulse" />
-              <span className="font-mono text-base tracking-wider">19473</span>
+              <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#f59e0b] animate-pulse" />
+              <span className="font-mono text-xs sm:text-base tracking-wider">{socialData.hotline || '19473'}</span>
             </a>
 
             <button

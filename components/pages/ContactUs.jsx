@@ -152,15 +152,24 @@ export const ContactUs = () => {
                   href={`https://wa.me/${socialData.whatsapp.replace(/[^0-9]/g, '')}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="font-mono text-sm font-bold text-gray-800 hover:text-[#25d366] block"
+                  className="inline-flex items-center font-mono text-base font-bold text-gray-800 hover:text-[#25d366] transition-colors"
                   dir="ltr"
                 >
                   <span
                     dir="ltr"
-                    style={{ direction: 'ltr', unicodeBidi: 'bidi-override', display: 'inline-block' }}
-                    className="font-mono text-base font-bold tracking-wider"
+                    style={{ direction: 'ltr', unicodeBidi: 'isolate' }}
+                    className="font-mono tracking-wider tabular-nums"
                   >
-                    {socialData.whatsapp.startsWith('+') ? socialData.whatsapp : `+${socialData.whatsapp}`}
+                    {(() => {
+                      const clean = socialData.whatsapp.replace(/[^0-9]/g, '');
+                      if (clean.startsWith('20') && clean.length === 12) {
+                        return `+20 ${clean.slice(2, 5)} ${clean.slice(5, 8)} ${clean.slice(8)}`;
+                      }
+                      if (clean.startsWith('01') && clean.length === 11) {
+                        return `+20 ${clean.slice(1, 4)} ${clean.slice(4, 7)} ${clean.slice(7)}`;
+                      }
+                      return socialData.whatsapp.startsWith('+') ? socialData.whatsapp : `+${socialData.whatsapp}`;
+                    })()}
                   </span>
                 </a>
                 <span className="text-[11px] text-gray-400">رد فوري على مدار الساعة</span>
@@ -249,6 +258,9 @@ export const ContactUs = () => {
                           if (e.key.length === 1 && !/[0-9+]/.test(e.key) && !e.ctrlKey && !e.metaKey) {
                             e.preventDefault();
                           }
+                        }}
+                        onInput={(e) => {
+                          e.target.value = e.target.value.replace(/[^0-9+]/g, '');
                         }}
                         onChange={(e) => setPhone(e.target.value.replace(/[^0-9+]/g, ''))}
                         onPaste={(e) => {

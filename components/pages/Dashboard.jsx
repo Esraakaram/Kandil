@@ -477,7 +477,7 @@ const RichTextEditor = ({ label = 'محتوى المقال', value = '', onChang
         }
         // Remove surrounding bare <p></p> to normalize
         const stripped = chunk.replace(/^<p[^>]*>/i, '').replace(/<\/p>$/i, '').trim();
-        return `<p className="mb-4 leading-relaxed text-gray-700">${stripped.replace(/\r?\n/g, '<br/>')}</p>`;
+        return `<p class="mb-4 leading-relaxed text-gray-700">${stripped.replace(/\r?\n/g, '<br/>')}</p>`;
       })
       .join('\n\n');
 
@@ -487,7 +487,7 @@ const RichTextEditor = ({ label = 'محتوى المقال', value = '', onChang
   const handleAddLink = () => {
     const url = prompt('أدخل رابط الموقع (URL):', 'https://');
     if (url && url !== 'https://') {
-      insertTag(`<a href="${url}" target="_blank" rel="noreferrer" className="text-[#d61c23] hover:underline font-bold">`, '</a>', 'اضغط هنا للزيارة');
+      insertTag(`<a href="${url}" target="_blank" rel="noreferrer" class="text-[#d61c23] hover:underline font-bold">`, '</a>', 'اضغط هنا للزيارة');
     }
   };
 
@@ -542,7 +542,7 @@ const RichTextEditor = ({ label = 'محتوى المقال', value = '', onChang
             <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-gray-200 shadow-xs">
               <button
                 type="button"
-                onClick={() => insertTag('<h2 className="text-xl sm:text-2xl font-black text-gray-900 mt-6 mb-3">', '</h2>', 'عنوان رئيسي')}
+                onClick={() => insertTag('<h2 class="text-xl sm:text-2xl font-black text-gray-900 mt-6 mb-3">', '</h2>', 'عنوان رئيسي')}
                 className="px-2 py-1 hover:bg-gray-100 rounded text-xs font-black text-gray-800"
                 title="عنوان رئيسي (H2)"
               >
@@ -550,7 +550,7 @@ const RichTextEditor = ({ label = 'محتوى المقال', value = '', onChang
               </button>
               <button
                 type="button"
-                onClick={() => insertTag('<h3 className="text-lg sm:text-xl font-bold text-gray-800 mt-4 mb-2">', '</h3>', 'عنوان فرعي')}
+                onClick={() => insertTag('<h3 class="text-lg sm:text-xl font-bold text-gray-800 mt-4 mb-2">', '</h3>', 'عنوان فرعي')}
                 className="px-2 py-1 hover:bg-gray-100 rounded text-xs font-bold text-gray-700"
                 title="عنوان فرعي (H3)"
               >
@@ -580,7 +580,7 @@ const RichTextEditor = ({ label = 'محتوى المقال', value = '', onChang
               </button>
               <button
                 type="button"
-                onClick={() => insertTag('<mark className="bg-amber-100 text-amber-900 font-bold px-1.5 py-0.5 rounded">', '</mark>', 'نص مميز')}
+                onClick={() => insertTag('<mark class="bg-amber-100 text-amber-900 font-bold px-1.5 py-0.5 rounded">', '</mark>', 'نص مميز')}
                 className="px-2 py-1 hover:bg-amber-50 rounded text-xs font-bold text-amber-800"
                 title="تمييز النص بلون ملفت"
               >
@@ -594,7 +594,7 @@ const RichTextEditor = ({ label = 'محتوى المقال', value = '', onChang
             <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-gray-200 shadow-xs">
               <button
                 type="button"
-                onClick={() => insertTag('<ul className="list-disc list-inside space-y-2 my-4 text-gray-700 font-medium">\n  <li>', '</li>\n  <li>عنصر ثانٍ</li>\n</ul>', 'عنصر في القائمة')}
+                onClick={() => insertTag('<ul class="list-disc list-inside space-y-2 my-4 text-gray-700 font-medium">\n  <li>', '</li>\n  <li>عنصر ثانٍ</li>\n</ul>', 'عنصر في القائمة')}
                 className="px-2.5 py-1 hover:bg-gray-100 rounded text-xs font-bold flex items-center gap-1"
                 title="قائمة نقطية"
               >
@@ -602,7 +602,7 @@ const RichTextEditor = ({ label = 'محتوى المقال', value = '', onChang
               </button>
               <button
                 type="button"
-                onClick={() => insertTag('<ol className="list-decimal list-inside space-y-2 my-4 text-gray-700 font-medium">\n  <li>', '</li>\n  <li>خطوة ثانية</li>\n</ol>', 'خطوة أولى')}
+                onClick={() => insertTag('<ol class="list-decimal list-inside space-y-2 my-4 text-gray-700 font-medium">\n  <li>', '</li>\n  <li>خطوة ثانية</li>\n</ol>', 'خطوة أولى')}
                 className="px-2.5 py-1 hover:bg-gray-100 rounded text-xs font-bold flex items-center gap-1"
                 title="قائمة مرقمة"
               >
@@ -610,7 +610,7 @@ const RichTextEditor = ({ label = 'محتوى المقال', value = '', onChang
               </button>
               <button
                 type="button"
-                onClick={() => insertTag('<blockquote className="border-r-4 border-[#d61c23] bg-red-50/60 p-4 rounded-r-xl my-4 text-gray-800 font-semibold">\n  "', '"\n</blockquote>', 'اقتباس أو معلومة هامة عن المشروع')}
+                onClick={() => insertTag('<blockquote class="border-r-4 border-[#d61c23] bg-red-50/60 p-4 rounded-r-xl my-4 text-gray-800 font-semibold">\n  "', '"\n</blockquote>', 'اقتباس أو معلومة هامة عن المشروع')}
                 className="px-2.5 py-1 hover:bg-gray-100 rounded text-xs font-bold"
                 title="اقتباس مميز"
               >
@@ -626,7 +626,7 @@ const RichTextEditor = ({ label = 'محتوى المقال', value = '', onChang
               </button>
               <button
                 type="button"
-                onClick={() => insertTag('\n<hr className="my-6 border-gray-200" />\n')}
+                onClick={() => insertTag('\n<hr class="my-6 border-gray-200" />\n')}
                 className="px-2 py-1 hover:bg-gray-100 rounded text-xs font-bold text-gray-500"
                 title="خط فاصل بين الأقسام"
               >
@@ -668,8 +668,8 @@ const RichTextEditor = ({ label = 'محتوى المقال', value = '', onChang
               </span>
               {value ? (
                 <div
-                  className="prose prose-sm sm:prose-base max-w-none text-gray-800 leading-relaxed font-sans text-right prose-headings:font-black prose-headings:text-gray-900 prose-p:leading-loose prose-a:text-[#d61c23] prose-strong:text-gray-900 prose-blockquote:border-r-4 prose-blockquote:border-[#d61c23] prose-blockquote:bg-red-50/50 prose-blockquote:p-4 prose-blockquote:rounded-r-xl"
-                  dangerouslySetInnerHTML={{ __html: value }}
+                  className="article-content prose prose-sm sm:prose-base max-w-none text-gray-800 leading-relaxed font-sans text-right"
+                  dangerouslySetInnerHTML={{ __html: value.replace(/className=/g, 'class=') }}
                 />
               ) : (
                 <p className="text-gray-400 text-xs text-center py-10">
@@ -734,6 +734,7 @@ export const Dashboard = () => {
   });
 
   // Company Settings Form State
+  const [savingCompanySettings, setSavingCompanySettings] = useState(false);
   const [companySettings, setCompanySettings] = useState({
     hotline: '19473',
     whatsapp: '01000019473',
@@ -1567,6 +1568,7 @@ export const Dashboard = () => {
   // --- Handlers: Company Settings ---
   const handleSaveCompanySettings = async (e) => {
     e.preventDefault();
+    setSavingCompanySettings(true);
     try {
       const linksPayload = [
         { type: 0, url: companySettings.facebook || '', name: 'Facebook' },
@@ -1589,9 +1591,14 @@ export const Dashboard = () => {
         throw new Error(errData.error || 'فشل حفظ الإعدادات');
       }
       showToast('تم حفظ إعدادات الشركة وبيانات الاتصال بنجاح');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('company-settings-updated', { detail: companySettings }));
+      }
     } catch (err) {
       console.error(err);
       showToast(err.message || 'حدث خطأ أثناء حفظ الإعدادات');
+    } finally {
+      setSavingCompanySettings(false);
     }
   };
 
@@ -3217,13 +3224,23 @@ export const Dashboard = () => {
                               alt={p.name}
                               className="w-full h-full object-cover"
                             />
-                            <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                            <div className="absolute top-3 right-3 flex items-center gap-1.5 flex-wrap">
                               <span className="bg-slate-900/80 backdrop-blur text-white px-2.5 py-1 rounded-full text-[10px] font-bold">
                                 {p.status || 'تحت الإنشاء'}
                               </span>
                               {p.isFinish && (
                                 <span className="bg-emerald-600 text-white px-2 py-1 rounded-full text-[10px] font-bold">
                                   سابقة أعمال
+                                </span>
+                              )}
+                              {p.pdfFile && (
+                                <span className="bg-red-600 text-white px-2 py-1 rounded-full text-[10px] font-bold shadow">
+                                  PDF متاح
+                                </span>
+                              )}
+                              {p.videoURL && (
+                                <span className="bg-blue-600 text-white px-2 py-1 rounded-full text-[10px] font-bold shadow">
+                                  فيديو متاح
                                 </span>
                               )}
                             </div>
@@ -4417,10 +4434,14 @@ export const Dashboard = () => {
                           ) : null}
 
                           {/* Fallback branded card if image missing or loading */}
-                          <div className="absolute inset-0 -z-0 flex flex-col items-center justify-center p-4 text-center bg-gradient-to-br from-[#1a1c23] to-[#26070a] text-white">
-                            <Layers className="w-8 h-8 text-white/30 mb-2" />
-                            <span className="text-xs font-bold text-white/90">كفر صفحة: {cov.pageName}</span>
-                            <span className="text-[10px] text-white/50 mt-1">اضغط "تعديل" بالأسفل لرفع صورة الكفر</span>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center bg-gradient-to-br from-slate-900 via-slate-800 to-[#3a080d] text-white">
+                            <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center mb-2.5 border border-white/10 shadow-inner">
+                              <Layers className="w-6 h-6 text-[#f59e0b]" />
+                            </div>
+                            <span className="text-xs font-black text-white tracking-wide">كفر صفحة: {cov.pageName}</span>
+                            <span className="text-[11px] text-white/70 mt-1 max-w-[200px] leading-tight">
+                              انقر على "تعديل" بالأسفل لرفع صورة أو خلفية الهيدر
+                            </span>
                           </div>
 
                           <div className="absolute top-3 right-3 bg-slate-900/90 backdrop-blur text-white px-3 py-1 rounded-full text-xs font-bold shadow-md z-10">
@@ -5313,10 +5334,20 @@ export const Dashboard = () => {
                 <div className="pt-2 flex justify-end">
                   <button
                     type="submit"
-                    className="flex items-center gap-2 bg-[#d61c23] hover:bg-[#b7151b] text-white font-bold px-6 py-2.5 rounded-xl text-xs shadow transition"
+                    disabled={savingCompanySettings}
+                    className="flex items-center gap-2 bg-[#d61c23] hover:bg-[#b7151b] disabled:opacity-50 text-white font-bold px-6 py-2.5 rounded-xl text-xs shadow transition cursor-pointer"
                   >
-                    <Save className="w-4 h-4" />
-                    <span>حفظ التعديلات</span>
+                    {savingCompanySettings ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>جاري الحفظ والتحديث...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4" />
+                        <span>حفظ التعديلات</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </form>

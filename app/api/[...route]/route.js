@@ -83,13 +83,13 @@ export async function GET(req, { params }) {
       const data = await dbService.getSliders();
       return NextResponse.json(data);
     }
-    if (fullPath === 'coverimage') {
+    if (fullPath === 'coverimage' || fullPath === 'coverimages') {
       const data = await dbService.getCoverImages();
       return NextResponse.json(data);
     }
 
     // 5. Social Links
-    if (fullPath === 'sociallinks') {
+    if (fullPath === 'sociallinks' || fullPath === 'sociallink') {
       const data = await dbService.getSocialLinks();
       return NextResponse.json(data);
     }
@@ -241,7 +241,7 @@ export async function PUT(req, { params }) {
       const resource = pathParts[1].toLowerCase();
       const id = pathParts[2];
 
-      if (resource === 'sociallinks') {
+      if (resource === 'sociallinks' || resource === 'sociallink') {
         const links = await dbService.updateSocialLinks(body);
         return NextResponse.json({ success: true, socialLinks: links });
       }
@@ -281,7 +281,7 @@ export async function PUT(req, { params }) {
         const updated = await dbService.updateArea(id, body);
         return NextResponse.json(updated);
       }
-      if (resource === 'coverimages' && id) {
+      if ((resource === 'coverimages' || resource === 'coverimage') && id) {
         const updated = await dbService.updateCoverImage(id, body);
         return NextResponse.json(updated);
       }

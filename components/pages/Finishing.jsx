@@ -1,7 +1,7 @@
 'use client';
 
- function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }import React, { useState, useEffect } from 'react';
-import { useParams } from '@/lib/navigation';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from '@/lib/navigation';
 import { CheckCircle, Send, Play, X, ArrowLeft } from 'lucide-react';
 import { api, getImageUrl } from '@/services/api';
 
@@ -121,7 +121,7 @@ export const Finishing = () => {
               key={cat.id}
               onClick={() => setSelectedCategory(cat)}
               className={`px-6 py-3 rounded-full font-bold text-sm transition-all ${
-                _optionalChain([selectedCategory, 'optionalAccess', _ => _.id]) === cat.id
+                selectedCategory?.id === cat.id
                   ? 'bg-[#d61c23] text-white shadow-lg scale-103'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
@@ -144,7 +144,7 @@ export const Finishing = () => {
 
             {/* Items in Category */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {selectedCategory.items.map((item) => {
+              {(Array.isArray(selectedCategory.items) ? selectedCategory.items : []).map((item) => {
                 const imgSrc = item.imageName
                   ? getImageUrl(item.imageName)
                   : item.image
@@ -260,6 +260,9 @@ export const Finishing = () => {
                       if (e.key.length === 1 && !/[0-9+]/.test(e.key) && !e.ctrlKey && !e.metaKey) {
                         e.preventDefault();
                       }
+                    }}
+                    onInput={(e) => {
+                      e.target.value = e.target.value.replace(/[^0-9+]/g, '');
                     }}
                     onChange={(e) => setPhone(e.target.value.replace(/[^0-9+]/g, ''))}
                     onPaste={(e) => {

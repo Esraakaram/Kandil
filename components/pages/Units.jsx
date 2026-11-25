@@ -36,7 +36,7 @@ export const Units = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [roomsFilter, setRoomsFilter] = useState('all');
   const [bathroomsFilter, setBathroomsFilter] = useState('all');
-  const [maxPrice, setMaxPrice] = useState(3000000);
+  const [maxPrice, setMaxPrice] = useState(15000000);
   const [sortBy, setSortBy] = useState('default');
   const [viewMode, setViewMode] = useState('grid');
 
@@ -72,7 +72,7 @@ export const Units = () => {
       area: selectedArea,
       rooms: roomsFilter,
       bathrooms: bathroomsFilter,
-      maxPrice,
+      maxPrice: maxPrice < 15000000 ? maxPrice : undefined,
       search: searchTerm,
       sort: sortBy
     })
@@ -107,7 +107,7 @@ export const Units = () => {
     setStatusFilter('all');
     setRoomsFilter('all');
     setBathroomsFilter('all');
-    setMaxPrice(3000000);
+    setMaxPrice(15000000);
     setSortBy('default');
     setCurrentPage(1);
   };
@@ -310,14 +310,14 @@ export const Units = () => {
               <div className="flex justify-between items-center text-xs font-bold text-gray-700 mb-1.5">
                 <span>أقصى مقدم / سعر:</span>
                 <span className="font-mono text-[#d61c23]">
-                  {maxPrice.toLocaleString('ar-EG')} ج.م
+                  {maxPrice >= 15000000 ? 'الكل (غير محدد)' : `${maxPrice.toLocaleString('ar-EG')} ج.م`}
                 </span>
               </div>
               <input
                 type="range"
-                min="300000"
-                max="3000000"
-                step="50000"
+                min="500000"
+                max="15000000"
+                step="100000"
                 value={maxPrice}
                 onChange={(e) => {
                   setMaxPrice(Number(e.target.value));
